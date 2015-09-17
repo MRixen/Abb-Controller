@@ -1,0 +1,607 @@
+MODULE Rob_Sys(SYSMODULE)
+    !====================================================================
+    ! Module: Rob_Sys
+    ! Datum: 15.02.2013
+    ! Programmierer: AK
+    ! Beschreibung:
+    !====================================================================
+    PERS wobjdata wBazA:=[FALSE,TRUE,"",[[677.291,-50.3587,646.127],[0.496489,0.49994,-0.503975,-0.499568]],[[0,0,0],[1,0,0,0]]];
+    PERS wobjdata wBazB:=[FALSE,TRUE,"",[[678.837,189.773,646.426],[0.495696,0.501007,-0.503555,-0.49971]],[[0,0,0],[1,0,0,0]]];
+    PERS wobjdata wRegrip:=[FALSE,TRUE,"",[[385.706,699.361,601.131],[0.707075,0.707139,0.000006685,0.000003676]],[[0,0,0],[1,0,0,0]]];
+    PERS tooldata tAkt:=[TRUE,[[-37,0,254.99],[0,0,0,1]],[4,[-4.9,1,113],[1,0,0,0],0.074,0.071,0.012]];
+    !
+    PERS tooldata tRob1_Spitze:=[TRUE,[[0,0,140],[1,0,0,0]],[1,[0,0,80],[1,0,0,0],0,0,0]];
+    PERS speeddata vOri:=[150,50,0,0];
+    PERS dnum nLastPrgNr:=417418;
+    PERS num pgCode:=7;
+    PERS dnum pgNr:=393820;
+    PERS bool bConvertPos:=FALSE;
+    PERS string sClamp:="A";
+    PERS symnum GripperState:=1;
+    VAR num nAngleX:=0;
+    VAR num nAngleY:=0;
+    VAR num nAngleZ:=0;
+    VAR dnum nProgrammnummer;
+    VAR triggdata tTurnCrossOn;
+    VAR triggdata tTurnCrossOff;
+    VAR triggdata tTurnStraightOn;
+    VAR triggdata tTurnStraightOff;
+    VAR triggdata tGripperOpenOn;
+    VAR triggdata tGripperCloseOn;
+    VAR triggdata tGripperOpenOff;
+    VAR triggdata tGripperCloseOff;
+    VAR triggdata t1;
+    VAR triggdata t2;
+    VAR triggdata tConfPick;
+    VAR intnum iConfPick;
+    CONST errnum erOpenJaws:=1;
+    CONST errnum erCloseJaws:=2;
+    CONST symnum Empty:=0;
+    CONST symnum Part:=1;
+    CONST symnum SPCPart:=2;
+    CONST symnum NIOPart:=3;
+
+    !====================================================================
+    !Diese Procedure fährt den Roboter in Grundstellung
+    !und beendet ggf. den Programmablauf
+    !====================================================================
+    PROC Grundstellung(\switch Ende|switch InitClampState|switch emptyCycle)
+        VAR robtarget pAktuell;
+        VAR jointtarget pAktRobax;
+        VAR pos posAktuell;
+        VAR bool bTimeFlag;
+        CONST pos posRechts:=[500,-200,450];
+        CONST pos posLinks:=[1500,400,1000];
+        SoftDeact;
+        WaitTime\InPos,0.1;
+        pAktuell:=CRobT(\Tool:=tGreifer\WObj:=wobj0);
+        posAktuell:=CPos(\Tool:=tGreifer\WObj:=wobj0);
+        pAktRobax:=CJointT();
+
+        VelSet 100,vmax.v_tcp;
+        IF DOutput(LoaderOut)=0 THEN
+            ErrWrite "Bewegungsfehler","Der Roboter befindet sich im Maschinenraum, bitte von Hand freifahren.";
+            EXIT;
+        ENDIF
+
+        IF posAktuell.x>posRechts.x AND posAktuell.x<posLinks.x THEN
+            IF posAktuell.y>posRechts.y AND posAktuell.y<posLinks.y THEN
+                IF posAktuell.z>posRechts.z AND posAktuell.z<posLinks.z THEN
+                    !Roboter befindet sich in der Maschine
+                    pAktRobax:=[[6,-42,25,0,35,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+                    MoveAbsJ pAktRobax\NoEOffs,v300,z10,tGreifer;
+                ENDIF
+            ENDIF
+        ENDIF
+
+        IF pAktRobax.robax.rax_1<93 OR pAktRobax.robax.rax_1>97 THEN
+            !Roboter ist nicht über dem Band
+            pAktRobax.robax.rax_2:=-42;
+            pAktRobax.robax.rax_3:=40;
+            pAktRobax.robax.rax_5:=70;
+            MoveAbsJ pAktRobax\NoEOffs,v300,z10,tGreifer;
+            pAktRobax.robax.rax_4:=0;
+            pAktRobax.robax.rax_6:=0;
+            MoveAbsJ pAktRobax\NoEOffs,v300,z10,tGreifer;
+            pAktRobax.robax.rax_1:=95;
+            TriggIO tTurnStraightOn,0.2\Time\DOp:=doTurnGripperStraight,1;
+            TriggIO tTurnCrossOff,0.2\Time\DOp:=doTurnGripperCross,0;
+            TriggIO tGripperCloseOn,0.2\Time\DOp:=doGripperClose,1;
+            TriggIO tGripperOpenOff,0.2\Time\DOp:=doGripperOpen,0;
+            TriggJ CalcRobT(pAktRobax,tGreifer),v300,tTurnStraightOn\T2:=tTurnCrossOff\T3:=tGripperCloseOn\T4:=tGripperOpenOff,z10,tGreifer;
+        ENDIF
+        MoveAbsJ [[96.7778,-12.2193,33.2139,-0.22846,67.2353,6.86198],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]\NoEOffs,v300,z10,tGreifer;
+        WaitTime\InPos,0;
+        IF bConvertPos THEN
+            MoveAbsJ [[97,-12,33,43,70,-100],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]]\NoEOffs,v300,z10,tGreifer;
+            bConvertPos:=FALSE;
+        ENDIF
+        IF Present(Ende) THEN
+            bFirstRefPos:=TRUE;
+            WaitTime\InPos,0;
+            Greifer\Auf;
+            WaitTime 0.1;
+            Greifer\Gerade;
+            Set EntryGranted;
+            TPWrite "Roboter, PickVision Gestoppt! Grundstellung!";
+            WaitTime\InPos,1;
+            Set DOF_CycleEnded;
+            EXIT;
+        ENDIF
+        IF Present(InitClampState) THEN
+            nAnswer:=UIMessageBox(\Header:="WARNUNG"\MsgArray:=["Sind beide Spannfutter leer?"]\BtnArray:=["Ja","Nein"]\Icon:=iconWarning);
+            IF nAnswer=1 THEN
+                mAnswer:=UIMessageBox(\Header:="WARNUNG"\MsgArray:=["Sind beide Spannfutter wirklich frei?"]\BtnArray:=["Ja","Nein"]\Icon:=iconWarning);
+                IF mAnswer=1 THEN
+                    ! Baz.State und beide Futter auf leer setzen
+                    Baz.ClampA:=Empty;
+                    Baz.ClampB:=Empty;
+                    Baz.State:=Empty;
+                ELSEIF mAnswer=2 THEN
+                    ! Nichts tun
+                ENDIF
+            ELSEIF nAnswer=2 THEN
+                ! Nichts tun
+            ENDIF
+        ENDIF
+         IF Present(emptyCycle) THEN
+            Greifer\Auf;
+            WaitTime 0.1;
+            Greifer\Gerade;
+            WaitTime 2;
+            ConfirmPick1;
+            ConfirmPick2;
+        ENDIF
+    ENDPROC
+
+    PROC mvSoftDeact(INOUT tooldata tAkt)
+        SoftDeact;
+        MoveL CRobT(\Tool:=tAkt\wobj:=wobj0),v100,fine,tAkt\wobj:=wobj0;
+    ENDPROC
+
+    !====================================================================
+    !Prüft ob ein neues Programm geladen wurde
+    !====================================================================
+    PROC ChkPrgNr()
+        VAR errnum err_var;
+        VAR btnres answer;
+        AGAIN:
+        ! Send back program code
+        pgCode:=dig_PgCode;
+        SetGO dog_PgCode,pgCode;
+
+        ! Only for testing
+        !    pgNr := GInputDnum(dig_PgNr);  
+        !	SetGO dog_PgNr, pgNr;
+        ! ----------
+
+        ! -------
+        IF GInputDnum(dig_PgNr)=nLastPrgNr AND GInputDnum(dig_PgNr)=nProgrammnummer THEN
+            !Change to program 
+            SetGO dog_PgNr,nProgrammnummer;
+        ELSE
+            answer:=UIMessageBox(\Header:="Programmwechsel"\MsgArray:=[stempty,"Altes Roboterprogramm "+ValToStr(nLastPrgNr),"Neues Roboterprogramm "+ValToStr(nProgrammnummer),"Programmnummer Turmat "+ValToStr(GInputDnum(dig_PgNr)),"Ist der Roboter umgerüstet?",stEmpty,stEmpty]\Buttons:=btnOKCancel\DefaultBtn:=resCancel\Icon:=iconInfo\BreakFlag:=err_var);
+            IF answer=resOK THEN
+                IF GInputDnum(dig_PgNr)=nProgrammnummer nLastPrgNr:=GInputDnum(dig_PgNr);
+                GOTO AGAIN;
+            ELSE
+                EXIT;
+            ENDIF
+        ENDIF
+
+        ! ---- old code ----
+
+        !IF dig_PgNr=nLastPrgNr AND dig_PgNr=nProgrammnummer THEN
+        ! Change to program 
+        !  SetGO dog_PgNr,nProgrammnummer;
+        !ELSE
+        !  answer:=UIMessageBox(\Header:="Programmwechsel"\MsgArray:=[stempty,"Altes Roboterprogramm "+ValToStr(nLastPrgNr),"Neues Roboterprogramm "+ValToStr(nProgrammnummer),"Programmnummer Turmat "+ValToStr(dig_PgNr),"Ist der Roboter umgerüstet?",stEmpty,stEmpty]\Buttons:=btnOKCancel\DefaultBtn:=resCancel\Icon:=iconInfo\BreakFlag:=err_var);
+        !  IF answer=resOK THEN
+        !    IF dig_PgNr=nProgrammnummer nLastPrgNr:=dig_PgNr;
+        !    GOTO AGAIN;
+        !  ELSE
+        !   EXIT;
+        !  ENDIF
+        !ENDIF
+    ENDPROC
+
+    !Prüft ob der Sicherheitskreis verriegelt wurde
+    PROC ChkDoor()
+        VAR btnres answer;
+
+        WHILE DOutput(DOF_EntryRequest)=1 AND DOutput(DOF_AutoOn)=1 DO
+            UIMsgBox\Header:="Sicherheitskreis","Der Sicherheitskreis ist nicht verriegelt."\MsgLine2:="Türschalter und Türen kontrollieren."\Buttons:=btnOK\Icon:=iconWarning\Result:=answer;
+        ENDWHILE
+    ENDPROC
+
+    !-----------------------------------------------------------------------------
+    ! Procedure:     Orientieren
+    ! Description:   Ändert die Orientierung des Robtargets nach den übergebenen 
+    !								 Winkeln.
+    ! Remarks:
+    ! Called from:	 ModCam Robot
+    !-----------------------------------------------------------------------------  
+    FUNC robtarget Orientieren(robtarget pPoint\num nAngleX\num nAngleY\num nAngleZ)
+        VAR num X_Angle;
+        VAR num Y_Angle;
+        VAR num Z_Angle;
+
+        X_Angle:=EulerZYX(\X,pPoint.rot);
+        Y_Angle:=EulerZYX(\Y,pPoint.rot);
+        Z_Angle:=EulerZYX(\Z,pPoint.rot);
+        IF Present(nAngleX) X_Angle:=nAngleX;
+        IF Present(nAngleY) Y_Angle:=nAngleY;
+        IF Present(nAngleZ) Z_Angle:=nAngleZ;
+        pPoint.rot:=OrientZYX(Z_Angle,Y_Angle,X_Angle);
+        RETURN pPoint;
+    ENDFUNC
+
+    !-----------------------------------------------------------------------------
+    ! Procedure:     ComOutBAZ
+    ! Description:   Diese Routine wird aufgerufen, wenn der Roboter die Übergabe-
+    !								 station verlässt.
+    ! Argument:
+    ! Remarks:
+    ! Called from:   main
+    !----------------------------------------------------------------------------- 
+    PROC ComOutBAZ()
+
+    ENDPROC
+
+    !-----------------------------------------------------------------------------
+    ! Procedure: ComInBAZ
+    ! Date: 01.03.2015     Version: 1.0     Programmer: AK
+    !
+    ! Description: Prüfen ob Baz zum Einlegen bereit ist. 
+    !              Hat die Maschine geteilt, werden neue Daten gelesen.
+    !-----------------------------------------------------------------------------
+    PROC ComInBAZ()
+        VAR errnum errBreak;
+        VAR bool bMaxTime;
+
+        IF OpMode()=OP_MAN_PROG THEN
+            WaitUntil diFreigabeBeladen=1\MaxTime:=3;
+        ELSE
+            WaitUntil diFreigabeBeladen=1\MaxTime:=8\TimeFlag:=bMaxTime;
+            IF bMaxTime THEN
+                TPWrite "Warte bis BAZ bereit zum Einlegen";
+                WHILE diFreigabeBeladen=0 DO
+                    GetBAZState;
+                    CheckSystem;
+                    WaitTime 0.5;
+                ENDWHILE
+            ENDIF
+        ENDIF
+        ! Test
+        GetBAZState;
+        !
+
+        ! Warte bis Tisch von BAZ gedreht
+        WaitUntil Baz.Turned\MaxTime:=8\TimeFlag:=bMaxTime;
+        IF bMaxTime THEN
+            TPWrite "Warte bis BAZ geteilt hat";
+            WHILE Baz.Turned=FALSE DO
+                CheckSystem;
+                WaitTime 0.5;
+            ENDWHILE
+        ENDIF
+        IF Baz.NewData GetBAZState;
+    ERROR
+        IF ERRNO=ERR_WAIT_MAXTIME THEN
+            nAnswer:=UIMessageBox(\Header:="Warnung"\MsgArray:=["Keine Freigabe von der Maschine.","","Soll das Signal Ignoriert werden?"]\BtnArray:=["Ignorieren","Erneute Prüfung","","","Fahre in Grundstellung"]\Icon:=iconWarning\Breakflag:=errBreak);
+            VelSet 100,vmax.v_tcp;
+            IF errBreak=ERR_TP_DIBREAK RETRY;
+            IF nAnswer=1 THEN
+                TRYNEXT;
+            ELSEIF nAnswer=2 THEN
+                RETRY;
+            ELSEIF nAnswer=5 THEN
+                Grundstellung\Ende;
+            ENDIF
+        ELSEIF ERRNO=erOpenJaws THEN
+            ErrWrite "Fehler Maschine","Spannbacke nicht geöffnet"\RL2:="diJawsOpen nicht 1"\RL3:="Wo -> ComInBAZ";
+            Stop;
+            RETRY;
+        ENDIF
+    ENDPROC
+
+    !Nach dem teilen Zustand der Maschine abfragen
+    PROC GetBAZState()
+        VAR symnum A:=Part;
+        VAR symnum B:=Part;
+        VAR num merker:=1;
+        IF ( ( (DInput(diTurmatAuto)=0) AND (OpMode()=OP_AUTO) ) OR ( (DInput(diTurmatHand)=0) AND (OpMode()=OP_MAN_PROG) ) ) THEN 
+            TPWrite "Betriebsarten Turmat und Foerdertechnik stimmen nicht überein.";
+        ENDIF
+        WHILE ( ( (DInput(diTurmatAuto)=0) AND (OpMode()=OP_AUTO) ) OR ( (DInput(diTurmatHand)=0) AND (OpMode()=OP_MAN_PROG) ) ) DO
+            WaitTime 0.1;
+        ENDWHILE
+        ! Test Beginn
+        ! diNIOClampAB=1 AND diErrClampA=1 AND Baz.ClampB>0
+        ! Test Ende
+        IF (diNIOClampAB=1 AND diErrClampA=1) THEN
+            !NIO-Teile in Spannbacke A
+            A:=NIOPart;
+            Baz.State:=NIOPart;
+            Baz.Cycle:="NIOCycleClampA";
+            !TPWrite "NIO-Zyklus wird gestartet.";
+            merker:=0;
+        ENDIF
+        IF (diNIOClampAB=1 AND diErrClampB=1) THEN
+            !NIO-Teile in Spannbacke B
+            B:=NIOPart;
+            Baz.State:=NIOPart;
+            Baz.Cycle:="NIOCycleClampB";
+            !TPWrite "NIO-Zyklus wird gestartet.";
+            merker:=0;
+        ENDIF
+        IF diEmptyCycle=1 THEN
+            !Maschine wird Leergefahren
+            Baz.Cycle:="EmptyCycle";
+            !TPWrite "Entleer-Zyklus wird gestartet.";
+            merker:=0;
+        ENDIF
+        IF diSPCCycle=1 THEN
+            !SPC Teil wurde angefordert
+            A:=SPCPart;
+            B:=SPCPart;
+            Baz.State:=SPCPart;
+            Baz.Cycle:="SPCCycle";
+            !TPWrite "SPC-Zyklus wird gestartet.";
+            merker:=0;
+        ENDIF
+        IF merker=1 THEN
+            Baz.State:=Empty;
+            Baz.Cycle:="RunCycle";
+        ENDIF
+
+        IF diClampAOpen=1 OR (diClampAOpen=0 AND Baz.ClampA=0) THEN
+            Baz.ClampA:=Empty;
+        ELSE
+            Baz.ClampA:=A;
+        ENDIF
+        IF diClampBOpen=1 OR (diClampBOpen=0 AND Baz.ClampB=0) THEN
+            Baz.ClampB:=Empty;
+        ELSE
+            Baz.ClampB:=B;
+        ENDIF
+        IF Baz.ClampA=Baz.ClampB Baz.State:=Baz.ClampA;
+        Baz.NewData:=FALSE;
+    ENDPROC
+
+    !-----------------------------------------------------------------------------
+    ! Procedure: GetClamp
+    ! Description:   
+    ! Argument:
+    ! Remarks:
+    ! Called from:  Prüfen welche Spannbacke bestückt werden soll.
+    !-----------------------------------------------------------------------------     
+    FUNC string GetClamp()
+        AGAIN:
+        IF Baz.ClampA=Empty THEN
+            Waituntil Spannbacke(\A\Auf);
+            RETURN "A";
+        ELSEIF Baz.ClampB=Empty THEN
+            Waituntil Spannbacke(\B\Auf);
+            RETURN "B";
+        ELSEIF Baz.State=NIOPart OR Baz.State=SPCPart THEN
+            TPWrite "Einlegen wurde abgebrochen, da NIO oder SPC-Teil im Spannfutter.";
+            RETURN Baz.Cycle;
+        ELSE
+            TPWrite "Neues Teil kann nicht eingelegt werden.";
+            WHILE (((NOT Baz.ClampA=Empty) OR (NOT Baz.ClampB=Empty)) AND (NOT Baz.State=NIOPart) AND (NOT Baz.State=SPCPart)) DO
+                GetBAZState;
+                WaitTime 0.1;
+            ENDWHILE
+            GOTO AGAIN;
+        ENDIF       
+    ENDFUNC
+
+    !FUNC string GetClamp()
+    !AGAIN:
+    !        IF Baz.State=Empty THEN
+    !            IF Baz.ClampA=Empty THEN
+    !                Waituntil Spannbacke(\A\Auf);
+    !                RETURN "A";
+    !            ELSEIF Baz.ClampB=Empty THEN
+    !                Waituntil Spannbacke(\B\Auf);
+    !                RETURN "B";
+    !            ELSE
+    !                ErrWrite "Fehler Maschine","Spannbacke nicht geöffnet"\RL2:="diClampXOpen nicht 1"\RL3:="Wo -> GetClamp";
+    !                Stop;
+    !                GOTO AGAIN;
+    !            ENDIF
+    !        ELSE
+    !            TPWrite "Einlegen wurde abgebrochen: "+Baz.Cycle+" "\Num:=Baz.State;
+    !
+    !            RETURN Baz.Cycle;
+    !        ENDIF
+    !ERROR
+    !ENDFUNC
+
+    !-----------------------------------------------------------------------------
+    ! Procedure:     Spannbacke
+    ! Description:   Open and close the Clamps.
+    ! Argument:
+    ! Remarks:
+    ! Called from:   ModCam Robot
+    !-----------------------------------------------------------------------------     
+    FUNC bool Spannbacke(\switch A|switch B\switch Auf|switch Zu\symnum state|switch emptyCycle)
+        VAR bool bNotClosed:=FALSE;
+        VAR num nTime:=10;
+        VAR bool Answer;
+
+        IF OpMode()=OP_MAN_PROG nTime:=2;
+        !rechte Spannbacke
+        IF Present(A) THEN
+            IF Present(Auf) THEN
+                ! Only for simulation
+                ! Reset doClampAopenClose;
+                !WaitTime 0.01;
+                !
+                Set doClampAOpen;
+                Reset doClampAClose;
+                WaitDIErr diClampAOpen,1,nTime\erNumber:=erOpenJaws;
+                Reset doClampAOpen;
+                Baz.ClampA:=Empty;
+                !AK nur zur Simulation
+                !Reset doClampAOpen;
+                Answer:=TRUE; 
+            ELSEIF Present(emptyCycle) THEN
+                Set doClampAClose;
+                Reset doClampAOpen;
+                WaitUntil diClampAClose=1\MaxTime:=5\TimeFlag:=bNotClosed;
+                Reset doClampAClose;
+                Baz.ClampA:=Empty;
+                IF bNotClosed THEN
+                    Set doClampAOpen;
+                    Reset doClampAClose;
+                    WaitDIErr diClampAOpen,1,nTime\erNumber:=erOpenJaws;
+                    Reset doClampAOpen;
+                ENDIF
+                Answer:=(bNotClosed=FALSE);
+            ELSEIF Present(Zu) THEN
+                ! Only for simulation - close
+                !Set doClampAopenClose;
+                !WaitTime 0.2;
+                !
+                Set doClampAClose;
+                Reset doClampAOpen;
+                WaitUntil diClampAClose=1\MaxTime:=5\TimeFlag:=bNotClosed;
+                IF NOT bNotClosed THEN
+                    PulseDO\PLength:=0.35,doPartInClampA;
+                    !Set doPartInClampA;
+                ENDIF
+                Reset doClampAClose;
+                !Reset doPartInClampA;
+                Baz.ClampA:=State;
+                !AK nur zur Simulation
+                !Reset doClampAClose;
+                IF bNotClosed THEN
+                    ! Only for simulation - close
+                    !Set doClampAopenClose;
+                    !WaitTime 0.2;
+                    !
+                    Set doClampAOpen;
+                    Reset doClampAClose;
+                    !Reset doPartInClampA;
+                    WaitDIErr diClampAOpen,1,nTime\erNumber:=erOpenJaws;
+                    Reset doClampAOpen;
+                    Baz.ClampA:=Empty;
+                    !AK nur zur Simulation
+                    !Reset doClampAOpen;
+                ENDIF
+                Answer:=(bNotClosed=FALSE);
+            ENDIF
+        ELSE
+            !linke Spannbacke
+            IF Present(Auf) THEN
+                ! Only for simulation
+                !Reset doClampBopenClose;
+                !WaitTime 0.01;
+                !
+                Set doClampBOpen;
+                Reset doClampBClose;
+                WaitDIErr diClampBOpen,1,nTime\erNumber:=erOpenJaws;
+                Reset doClampBOpen;
+                Baz.ClampB:=Empty;
+                !AK nur zur Simulation
+                !Reset doClampBOpen;
+                Answer:=TRUE;
+            ELSEIF Present(emptyCycle) THEN
+                Set doClampBClose;
+                Reset doClampBOpen;
+                WaitUntil diClampBClose=1\MaxTime:=5\TimeFlag:=bNotClosed;
+                Reset doClampBClose;
+                 Baz.ClampB:=Empty;
+                IF bNotClosed THEN
+                    Set doClampBOpen;
+                    Reset doClampBClose;
+                    WaitDIErr diClampBOpen,1,nTime\erNumber:=erOpenJaws;
+                    Reset doClampBOpen;
+                ENDIF
+                Answer:=(bNotClosed=FALSE);
+            ELSEIF Present(Zu) THEN
+                ! Only for simulation
+                !Set doClampBopenClose;
+                !WaitTime 0.2;
+                !
+                Set doClampBClose;
+                Reset doClampBOpen;
+                WaitUntil diClampBClose=1\MaxTime:=5\TimeFlag:=bNotClosed;
+                IF NOT bNotClosed THEN
+                    PulseDO\PLength:=0.35,doPartInClampB;
+                    !Set doPartInClampB;
+                ENDIF
+                Reset doClampBClose;
+                !Reset doPartInClampB;
+                Baz.ClampB:=State;
+                !AK nur zur Simulation
+                !Reset doClampBClose;
+                IF bNotClosed THEN
+                    ! Only for simulation
+                    !Set doClampBopenClose;
+                    !WaitTime 0.2;
+                    !
+                    Set doClampBOpen;
+                    Reset doClampBClose;
+                    !Reset doPartInClampB;
+                    WaitDIErr diClampBOpen,1,nTime\erNumber:=erOpenJaws;
+                    Reset doClampBOpen;
+                    Baz.ClampB:=Empty;
+                    !AK nur zur Simulation
+                    !Reset doClampBOpen;
+                ENDIF
+                Answer:=(bNotClosed=FALSE);
+            ENDIF
+        ENDIF
+        IF Baz.ClampA=Baz.ClampB Baz.State:=Baz.ClampA;
+        !Baz sollte jetzt teilen
+        IF (diClampAClose=1 AND diClampBClose=1) AND (Baz.ClampA=Part AND Baz.ClampB=Part) AND (diNIOClampAB=0) AND (diFreigabeBeladen=0) Baz.Turned:=FALSE;
+        RETURN Answer;
+    ERROR
+        IF ERRNO=erOpenJaws THEN
+            ErrWrite "Fehler Maschine","Spannbacke nicht geöffnet"\RL2:="diClampXOpen nicht 1"\RL3:="Wo -> Spannbacke";
+        ELSEIF ERRNO=erCloseJaws THEN
+            ErrWrite "Fehler Maschine","Spannbacke nicht geschlossen"\RL2:="diClampXClose nicht 1"\RL3:="Wo -> Spannbacke";
+        ENDIF
+        Stop;
+        IF OpMode()=OP_MAN_PROG THEN
+            TRYNEXT;
+        ELSE
+            RETRY;
+        ENDIF
+    ENDFUNC
+
+    !-----------------------------------------------------------------------------
+    ! Procedure:     Greifer
+    ! Description:   Open and close the Gripper.
+    ! Argument:
+    ! Remarks:
+    ! Called from:   ModCam Robot
+    !-----------------------------------------------------------------------------   
+    PROC Greifer(\switch Auf|switch Zu,\switch Gerade|switch Quer|symnum state)
+        IF Present(Auf) THEN
+            Reset doGripperClose;
+            Set doGripperOpen;
+            GripperState:=Empty;
+        ENDIF
+        IF Present(Zu) THEN
+            Reset doGripperOpen;
+            Set doGripperClose;
+            WaitTime 0.15;
+        ENDIF
+        IF Present(Gerade) THEN
+            Reset doTurnGripperCross;
+            Set doTurnGripperStraight;
+            WaitTime 0.5;
+            RETURN ;
+        ENDIF
+        IF Present(Quer) THEN
+            Reset doTurnGripperStraight;
+            Set doTurnGripperCross;
+            WaitTime 0.5;
+            RETURN ;
+        ENDIF
+        IF Present(state) GripperState:=state;
+    ENDPROC
+
+    !====================================================================
+    !Diese Procedure wartet auf einen Digitalen Eingang und gibt
+    !ggf. eine Fehlernummer zurück.
+    !====================================================================
+    PROC WaitDIErr(VAR signaldi DISignal,num nSignalwert,num nMaxTime\errnum erNumber)
+        VAR bool bTimeFlag;
+        !AK nur zur Simulation
+        !WaitTime 0.5;
+        !
+        IF Present(erNumber) THEN
+            WaitDI DISignal,nSignalwert\MaxTime:=nMaxTime\TimeFlag:=bTimeFlag;
+            IF bTimeFlag RAISE erNumber;
+        ELSE
+            WaitDI DISignal,nSignalwert\MaxTime:=nMaxTime;
+        ENDIF
+    ERROR
+        RAISE ;
+    ENDPROC
+ENDMODULE

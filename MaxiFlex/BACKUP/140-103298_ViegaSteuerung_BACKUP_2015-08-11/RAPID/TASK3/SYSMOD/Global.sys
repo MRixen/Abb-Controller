@@ -1,0 +1,19 @@
+MODULE Global(SYSMODULE,NOSTEPIN)
+  !====================================================================
+  ! Module:
+  ! Datum: 11.05.10
+  ! Programmierer: AK
+  ! Beschreibung: Globales Systemmodul muﬂ in beiden Tasks aktiv sein
+  !====================================================================
+  !Globale Daten
+   RECORD bazstate
+     bool Turned;
+     bool NewData;
+     symnum ClampA;
+     symnum ClampB;
+     symnum State;
+     string Cycle;
+   ENDRECORD
+   PERS bazstate Baz:=[TRUE,FALSE,1,1,1,"RunCycle"];
+ENDMODULE
+

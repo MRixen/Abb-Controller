@@ -1,0 +1,404 @@
+MODULE Common(SYSMODULE)
+    !***************************************************
+    !Programtype:  Foreground
+    !Description:  This is a module common to all detail programs
+    !              It also contains data regularly used by PickVision.
+    !
+    !
+    !              Svensk Industriautomation AB.
+    !
+    ! Copyright (c) Svensk Industriautomation AB 2011
+    ! All rights reserved
+    !
+    !---------------------------------------------------
+    !Version           Date            Description
+    !---------------------------------------------------
+    !4.0              20111124         Created
+    !
+    !***************************************************
+
+    !
+    !# -----------------------
+    !#--------Num data
+    !# -----------------------
+    CONST num RADIUS_SAFE:=500;
+    ! define a cylindrical region for safe position
+    CONST num HEIGHT_SAFE:=500;
+    !CONST num RADIUS_MACHINE:=150;
+    ! define a large spherical region around machine (collision region)
+    !CONST pos LowPosOld:=[600,500,200];
+    CONST pos LowPos:=[435,500,200];
+    CONST pos HighPos:=[2000,-500,1100];
+    CONST num RADIUS_FORBIDDEN:=2000;
+    ! define a large cylindrical slice above robot foot that is not allowed for robot
+    CONST num HEIGHT_FORBIDDEN:=500;
+    VAR num nAnswer;
+    VAR num mAnswer;
+    ! variables for user setup
+
+    !
+    !# -----------------------
+    !# ------ Pos data
+    !# -----------------------
+    CONST pos CENTER_FORBIDDEN:=[0,0,1100];
+    ! defined center point for Forbiddenzone
+    CONST pos CENTER_MACHINE:=[830,13.3,611.8];
+    ! defined center point for Machinezone
+    CONST pos CENTER_SAFE:=[0,0,500];
+    ! defined center point for Safezone
+
+    !# -----------------------
+    !# ------ Robtargetdata
+    !# -----------------------
+    !
+    PERS robtarget pHome:=[[-33.27,301.78,545.94],[0.0524904,-0.677263,0.732715,0.0410891],[1,-1,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+    !# -----------------------
+    !#--------Shapedata data
+    !# -----------------------
+    VAR shapedata forbiddenShape;
+    VAR shapedata safeShape;
+    VAR shapedata machineShape;
+
+    !
+    !# -----------------------
+    !#--------String data
+    !# -----------------------
+    CONST string sSafeStartMenuDE{3}:=[" Roboter kann nicht sicher starten.  "," Bewegen zu sicherer Zone und Start."," ACHTUNG: Drücke OK für Direktstart. "];
+    CONST string sSafeStartMenuEN{3}:=[" Robot can not be started safely.   "," Move to save region and restart.   "," CAUTION: Press OK to start anyhow. "];
+    VAR string sLangSafeStart;
+
+    !
+    !# -----------------------
+    !#--------Tooldata data
+    !# -----------------------
+    PERS tooldata tCalibTool:=[TRUE,[[0,0,139],[1,0,0,0]],[0.5,[85,0,85],[1,0,0,0],0.012,0.012,0.012]];
+    PERS tooldata tGreifer:=[TRUE,[[-32.6,0,263.99],[1,0,0,0]],[4,[0,0,125],[1,0,0,0],0,0,0]];
+    PERS tooldata tGreiferQuer:=[TRUE,[[41,0,255.99],[0.707107,0,0.707107,0]],[4,[0,0,125],[1,0,0,0],0,0,0]];
+    !PERS tooldata tGreiferLang:=[TRUE,[[-33,0,263.99],[1,0,0,0]],[4,[0,0,125],[1,0,0,0],0,0,0]];
+    !PERS tooldata tGreiferQuerLang:=[TRUE,[[41,255.99],[0.707106781,0,0.707106781,0]],[4,[0,0,125],[1,0,0,0],0,0,0]];
+
+
+    ! variables for test of safe robot start
+    PERS tooldata tCurrentTool:=[TRUE,[[-36,0,232.99],[0,0,0,1]],[4.1,[-3.4,4.1,111.3],[1,0,0,0],0.172,0.182,0.013]];
+
+    !
+    !# -----------------------
+    !#--------Wobjdata data
+    !# -----------------------
+    PERS wobjdata wCamera:=[FALSE,TRUE,"",[[-376.594,703.756,-137.898],[0.708233,-0.000314448,-0.00606992,-0.705953]],[[0,0,0],[1,0,0,0]]];
+    PERS wobjdata wCamera1:=[FALSE,TRUE,"",[[-376.594,703.756,-137.898],[0.708233,-0.000314448,-0.00606992,-0.705953]],[[0,0,0],[1,0,0,0]]];
+    PERS wobjdata wCamera2:=[FALSE,TRUE,"",[[-40.8079,709.959,-135.024],[0.708193,0.00143583,-0.00855315,-0.705965]],[[0,0,0],[1,0,0,0]]];
+    PERS wobjdata wCurrentWobj:=[FALSE,TRUE,"",[[0,0,0],[1,0,0,0]],[[0,0,0],[1,0,0,0]]];
+
+    !
+    !# -----------------------
+    !#--------Wzstationary data
+    !# -----------------------
+    VAR wzstationary forbiddenVolume;
+    VAR wzstationary machineVolume;
+    VAR wzstationary safeVolume;
+
+    !# -----------------------
+    !#--------Definition for Cycletimes
+    !# -----------------------
+    CONST num TOTAL_NUM_OF_CYCLES:=50;
+    PERS bool bFirstCycle:=TRUE;
+    PERS num nCycleTime:=3.265;
+    PERS num nTotalCycleTime:=4.99456;
+    VAR clock cCycleTime;
+    VAR num nCycles;
+    VAR num nCyclesShow;
+    VAR num nTimeArray{TOTAL_NUM_OF_CYCLES};
+    VAR num nTotalArrayTime;
+    VAR iodev ioFileLog;
+
+    !# -----------------------
+    !#--------Definition for gripper
+    !# -----------------------
+    CONST symnum partGripped:=1;
+    CONST symnum gOpen:=1;
+    CONST symnum gClose:=2;
+    CONST symnum noPartGripped:=0;
+    CONST num maxTimeGripperClosed:=0.5;
+    CONST num maxTimeGripperOpened:=5;    
+    VAR bool maxTimeReached;
+    VAR num lastpartState:=-1;
+    PERS wobjdata wSpcBelt:=[FALSE,TRUE,"",[[0,0,0],[1,0,0,0]],[[0,0,0],[1,0,0,0]]];
+
+!    FUNC BOOL getGripperState(symnum state)
+!        maxTimeReached:=FALSE;
+!        TEST state
+!        CASE gOpen:
+!        WaitDI diGripperOpened,1\MaxTime:=maxTimeGripperOpened\TimeFlag:=maxTimeReached;
+!            IF maxTimeReached THEN RETURN FALSE;
+!            ELSE RETURN TRUE;
+!            ENDIF
+!        CASE gClose:
+!        WaitDI diGripperClosed,1\MaxTime:=maxTimeGripperClosed\TimeFlag:=maxTimeReached;
+!            IF maxTimeReached THEN RETURN FALSE;
+!            ELSE RETURN TRUE;
+!            ENDIF
+!        ENDTEST
+!    ENDFUNC
+
+    FUNC bool getPartState(symnum state)
+        maxTimeReached:=FALSE;
+        TEST state
+        CASE gClose:
+        WaitDI diGripperClosed, 1\MaxTime:=maxTimeGripperClosed\TimeFlag:=maxTimeReached;
+        IF maxTimeReached THEN 
+            Greifer\Auf;
+            RETURN FALSE;
+        ELSE 
+            RETURN TRUE;
+        ENDIF
+!        CASE gOpen:
+!        WaitDI diGripperOpened,1\MaxTime:=maxTimeGripperClosed\TimeFlag:=maxTimeReached;
+!        IF maxTimeReached THEN 
+!            RETURN FALSE;
+!        ELSE 
+!            RETURN TRUE;
+!        ENDIF              
+        ENDTEST
+    ENDFUNC
+
+
+    
+
+
+    !-----------------------------------------------------------------------------
+    ! Function:      DefWorldZones
+    ! Description:   Defines SVIA standard world zones
+    ! Argument:
+    ! Remarks:       World zone will be active during program execution
+    !                and jogging.
+    ! Called from:   power_on_routine
+    !-----------------------------------------------------------------------------
+    PROC DefWorldZones()
+        DefForbiddenZone;
+        DefMachineZone;
+        DefSafeZone;
+    ENDPROC
+
+    !-----------------------------------------------------------------------------
+    ! Function:      DefForbiddenZone
+    ! Description:   Defines a forbidden zone.
+    !                Can be used to stop the robot if it comes inside the declared zone
+    ! Argument:
+    ! Remarks:       World zone will be active during program execution
+    !                and jogging.
+    ! Called from:   DefWorldZones
+    !-----------------------------------------------------------------------------
+    LOCAL PROC DefForbiddenZone()
+        WZCylDef\Inside,forbiddenShape,CENTER_FORBIDDEN,RADIUS_FORBIDDEN,HEIGHT_FORBIDDEN;
+        WZLimSup\Stat,forbiddenVolume,forbiddenShape;
+    ENDPROC
+
+    !-----------------------------------------------------------------------------
+    ! Function:      DefSafeZone
+    ! Description:   Defines a safe zone.
+    !                When the robot is inside this zone it is safe to start program
+    ! Argument:
+    ! Remarks:       World zone will be active during program execution
+    !                and jogging.
+    ! Called from:   DefWorldZones
+    !-----------------------------------------------------------------------------
+    LOCAL PROC DefSafeZone()
+        WZCylDef\Inside,safeShape,CENTER_SAFE,RADIUS_SAFE,HEIGHT_SAFE;
+        WZDOSet\Stat,safeVolume\Inside,safeShape,DOF_SafeZone,0;
+    ENDPROC
+
+    !-----------------------------------------------------------------------------
+    ! Function:      DefMachineZone
+    ! Description:   Defines a zone inside macheine.
+    !                When the robot is inside this zone the machine shall not be
+    !                able to run becaus of output signal DOF_LoaderOut
+    ! Argument:
+    ! Remarks:       World zone will be active during program execution
+    !                and jogging.
+    ! Called from:   DefWorldZones
+    !-----------------------------------------------------------------------------
+    LOCAL PROC DefMachineZone()
+        WZBoxDef\Inside,machineShape,LowPos,HighPos;
+        WZDOSet\Stat,machineVolume\Inside,machineShape,DOF_LoaderOut,0;
+        !WZSphDef\Inside,machineShape,CENTER_MACHINE,RADIUS_MACHINE;
+        !WZDOSet\Stat,machineVolume\Inside,machineShape,DOF_LoaderOut,0;
+    ENDPROC
+
+    !-----------------------------------------------------------------------------
+    ! Function:      isDistanceOK
+    ! Description:   Function that checks if the robot with its current tool is close to the
+    !                specified robtarget in the specified workobject
+    ! Argument:      checkPosition, workObject, maxDistance
+    ! Remarks:
+    ! Called from:   SafeRobotStart
+    !-----------------------------------------------------------------------------
+    LOCAL FUNC bool isDistanceOK(robtarget checkPosition,wobjdata workObject,num maxDistance)
+        VAR pos currentPos;
+        wCurrentWobj:=workObject;
+        tCurrentTool:=CTool();
+        currentPos:=CPos(\Tool:=tCurrentTool\WObj:=wCurrentWobj);
+        IF Distance(checkPosition.trans,currentPos)<=maxDistance THEN
+            RETURN TRUE;
+        ELSE
+            RETURN FALSE;
+        ENDIF
+    ENDFUNC
+
+    !-----------------------------------------------------------------------------
+    ! Procedure:     SafeRobotStart
+    ! Description:   Must be called as first routine upon robot start.
+    !                This will check if the robot is in a safe restart position.
+    ! Argument:      pCompareTarget eg pHome (defined in Common.sys)
+    ! Remarks:
+    ! Called from:   Detail specific robot program eg MainModule. Procedure Initialize.
+    !-----------------------------------------------------------------------------
+    PROC SafeRobotStart(\robtarget pCompareTarget)
+        VAR btnres btnAnswer;
+        VAR num nAnswer;
+        VAR string sSafeStartMenu{3};
+
+        ! Check LoaderOut, If required as a DOutput, EIO_CROSS: with Loaderout/ RobotInMachine  -Act1_invert
+        IF DOutput(DOF_LoaderOut)=0 GOTO NoSafeStart;
+
+        ! Check SafeZone, only if required
+        ! IF DOutput(DOF_SafeZone)=1 RETURN;
+
+        ! Check distance to possible variable robtargets, only if defined in Common OR MainModule.
+        IF Present(pCompareTarget)=TRUE THEN
+            IF isDistanceOK(pCompareTarget,wObj0,200)=TRUE RETURN ;
+        ENDIF
+
+        ! Check distance to specific robtargets, only if defined in Common OR MainModule.
+        IF isDistanceOK(pHome,wObj0,200)=TRUE RETURN ;
+
+        NoSafeStart:
+        sLangSafeStart:=GetSysInfo(\CtrlLang);
+        IF sLangSafeStart="de" THEN
+            sSafeStartMenu{1}:=sSafeStartMenuDE{1};
+            sSafeStartMenu{2}:=sSafeStartMenuDE{2};
+            sSafeStartMenu{3}:=sSafeStartMenuDE{3};
+        ELSEIF sLangSafeStart="sv" THEN
+            sSafeStartMenu{1}:=sSafeStartMenuSV{1};
+            sSafeStartMenu{2}:=sSafeStartMenuSV{2};
+            sSafeStartMenu{3}:=sSafeStartMenuSV{3};
+        ELSE
+            sSafeStartMenu{1}:=sSafeStartMenuEN{1};
+            sSafeStartMenu{2}:=sSafeStartMenuEN{2};
+            sSafeStartMenu{3}:=sSafeStartMenuEN{3};
+        ENDIF
+        btnAnswer:=UIMessageBox(\Header:="ACHTUNG-CAUTION-VARNING"\MsgArray:=sSafeStartMenu\Buttons:=btnOKCancel\Icon:=iconWarning);
+        IF btnAnswer=resOK THEN
+            ! OK from the operator
+            RETURN ;
+        ELSE
+            ! Cancel from the operator or operation break
+            EXIT;
+        ENDIF
+        TPErase;
+    ENDPROC
+
+    !-----------------------------------------------------------------------------
+    ! Procedure:     NextCycleTime
+    ! Description:   Calculates cycle time and visualising it on FP.
+    ! Argument:    
+    ! Remarks:
+    ! Called from:   Detail specific robot program eg pvbase. Anywhere in the program-loop
+    !-----------------------------------------------------------------------------
+    PROC NextCycleTime()
+        ! skip calculation first cycle and start clock
+        IF bFirstCycle=FALSE THEN
+            ! maximum numbers of cycles in calculation=TOTAL_NUM_OF_CYCLES
+            IF nCycles<TOTAL_NUM_OF_CYCLES Incr nCycles;
+            Incr nCyclesShow;
+            ClkStop cCycleTime;
+            nCycleTime:=ClkRead(cCycleTime);
+
+            WriteCycleTimeLog(nCycleTime);
+
+            ! store latset cycle time in the array
+            FOR i FROM (TOTAL_NUM_OF_CYCLES-1) TO 1 DO
+                nTimeArray{i+1}:=nTimeArray{i};
+            ENDFOR
+            nTimeArray{1}:=nCycleTime;
+            ! calculate tot. time in array and meantime
+            nTotalArrayTime:=0;
+            FOR i FROM 1 TO TOTAL_NUM_OF_CYCLES DO
+                nTotalArrayTime:=nTotalArrayTime+nTimeArray{i};
+            ENDFOR
+            nTotalCycleTime:=nTotalArrayTime/nCycles;
+            ! Print times on FP
+            TPErase;
+            TPWrite "Zykluszeit basiert auf den "+ValToStr(TOTAL_NUM_OF_CYCLES)+" neusten";
+            TPWrite "Teilen: "+ValToStr(nTotalCycleTime)+" s";
+            TPWrite "Neuester Zyklus: "+ValToStr(nCycleTime)+" s";
+            TPWrite "Gesamtzahl der gefertigten Teile: "+ValToStr(nCyclesShow)+" st";
+            ClkReset cCycleTime;
+        ENDIF
+        ClkStart cCycleTime;
+        bFirstCycle:=FALSE;
+    ENDPROC
+
+    PROC StopCycleTime()
+        ! skip calculation first cycle and start clock
+        ! maximum numbers of cycles in calculation=TOTAL_NUM_OF_CYCLES
+        IF nCycles<TOTAL_NUM_OF_CYCLES Incr nCycles;
+        Incr nCyclesShow;
+        ClkStop cCycleTime;
+        nCycleTime:=ClkRead(cCycleTime);
+
+        WriteCycleTimeLog(nCycleTime);
+
+        ! store latset cycle time in the array
+        FOR i FROM (TOTAL_NUM_OF_CYCLES-1) TO 1 DO
+            nTimeArray{i+1}:=nTimeArray{i};
+        ENDFOR
+        nTimeArray{1}:=nCycleTime;
+        ! calculate tot. time in array and meantime
+        nTotalArrayTime:=0;
+        FOR i FROM 1 TO TOTAL_NUM_OF_CYCLES DO
+            nTotalArrayTime:=nTotalArrayTime+nTimeArray{i};
+        ENDFOR
+        nTotalCycleTime:=nTotalArrayTime/nCycles;
+        ! Print times on FP
+        TPErase;
+        TPWrite "Zykluszeit basiert auf den "+ValToStr(TOTAL_NUM_OF_CYCLES)+" neusten";
+        TPWrite "Teilen: "+ValToStr(nTotalCycleTime)+" s";
+        TPWrite "Neuester Zyklus: "+ValToStr(nCycleTime)+" s";
+        TPWrite "Gesamtzahl der gefertigten Teile: "+ValToStr(nCyclesShow)+" st";
+        ClkReset cCycleTime;
+        bFirstCycle:=FALSE;
+    ENDPROC
+
+    PROC StartCycleTime()
+        ClkStart cCycleTime;
+        bFirstCycle:=FALSE;
+    ENDPROC
+
+    !-----------------------------------------------------------------------------
+    ! Procedure:     ResetCycleTimes
+    ! Description:   Resets cycle time clock.
+    ! Argument:    
+    ! Remarks:
+    ! Called from:   Detail specific robot program eg pvbase. Procedure Initialize.
+    !-----------------------------------------------------------------------------
+    PROC ResetCycleTimes()
+        nCycles:=0;
+        nCyclesShow:=0;
+        ! reset the array
+        FOR i FROM 1 TO TOTAL_NUM_OF_CYCLES DO
+            nTimeArray{i}:=0;
+        ENDFOR
+        ClkStop cCycleTime;
+        ClkReset cCycleTime;
+        bFirstCycle:=TRUE;
+    ENDPROC
+
+    PROC WriteCycleTimeLog(num nCycleTime)
+        Open "home:/Taktzeitaufzeichnung.txt",ioFileLog\Append;
+        Write ioFileLog,CDate()+" "+CTime()+" Taktzeit: "+ValToStr(nCycleTime);
+        Close ioFileLog;
+    ENDPROC
+
+ENDMODULE

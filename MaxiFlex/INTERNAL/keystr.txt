@@ -1,0 +1,3 @@
+#Loaded keys in C:\Users\Manuel.Rixen\Documents\GitHub\Abb-Controller\MaxiFlex\MaxiFlex\INTERNAL\keystr.txt:
+FHXXXXZCqocK9XXXXXbhXZ2HU#2o6KNDcuRXd
+8BlX4aRl-Ne	1

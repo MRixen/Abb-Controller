@@ -1,0 +1,86 @@
+#
+# Generated backup file, do not edit.
+#
+# Originally at: /hd0a/TEMP/914cc5a7
+# 15-08-11  16:20:49
+#
+>>SYSTEM_ID:
+140-103298
+
+>>PRODUCTS_ID:
+RobotWare Version: 5.61.2008.02
+
+  RW Control module key
+  RobotWare OS and English
+  644-2 German
+  709-x DeviceNet
+  709-1 DeviceNet m/s
+  840-2 PROFIBUS Fieldbus Adapter
+  608-1 World Zones
+  611-1 Path Recovery
+  616-1 PC Interface
+  617-1 FlexPendant Interface
+  623-1 Multitasking
+  RW Drive module 1 key
+  ABB standard manipulator
+  IRB 140
+  140T-6/0.8
+  Drive System 09 120/140/1400/1200/260
+  No additional drive
+
+>>ROBOT_TYPE:
+140T-6/0.8
+
+>>HOME:
+All public files and directories
+
+>>SYSPAR:
+SYS.cfg
+PROC.cfg
+EIO.cfg
+SIO.cfg
+MOC.cfg
+MMC.cfg
+
+
+>>TASK1: (T_ROB1,PVMain,)
+SYSMOD/user.sys @ user.sys
+PROGMOD/MainModule.mod @ mainmodule.mod
+PROGMOD/C417598.mod @ c417598.mod
+SYSMOD/PvMcSys.sys @ pvmcsys.sys
+SYSMOD/Common.sys @ common.sys
+SYSMOD/Global.sys @ global.sys
+SYSMOD/Rob_Sys.sys @ rob_sys.sys
+
+>>TASK2: (EntryControl,,)
+SYSMOD/user.sys @ user.sys
+SYSMOD/EntryControl.sys @ entrycontrol.sys
+SYSMOD/Global.sys @ global.sys
+
+>>TASK3: (EntryControlLamp,,)
+SYSMOD/user.sys @ user.sys
+PROGMOD/EntryControlLamp.mod @ entrycontrollamp.mod
+SYSMOD/Global.sys @ global.sys
+
+>>TASK4: (PvCom,,)
+SYSMOD/user.sys @ user.sys
+PROGMOD/PvCom.mod @ pvcom.mod
+SYSMOD/Global.sys @ global.sys
+
+>>TASK5: (PVSLAVE,,)
+SYSMOD/user.sys @ user.sys
+SYSMOD/PVSLAVE.sys @ pvslave.sys
+SYSMOD/Global.sys @ global.sys
+
+>>TASK6: (BAZ,,)
+SYSMOD/user.sys @ user.sys
+PROGMOD/MainBaz.mod @ mainbaz.mod
+SYSMOD/Global.sys @ global.sys
+
+>>TASK7: (ServerComm,,)
+SYSMOD/user.sys @ user.sys
+PROGMOD/ServerComm.mod @ servercomm.mod
+SYSMOD/Global.sys @ global.sys
+
+
+>>EOF:
