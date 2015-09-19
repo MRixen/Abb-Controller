@@ -1,0 +1,74 @@
+MODULE Global(SYSMODULE,NOSTEPIN)
+    !====================================================================
+    ! Module:
+    ! Datum: 11.05.10
+    ! Programmierer: AK
+    ! Beschreibung: Globales Systemmodul muß in beiden Tasks aktiv sein
+    !====================================================================
+    !Globale Daten
+    RECORD bazstate
+        bool Turned;
+        bool NewData;
+        symnum ClampA;
+        symnum ClampB;
+        symnum State;
+        string Cycle;
+    ENDRECORD
+
+    PERS bazstate Baz:=[FALSE,FALSE,1,1,1,"RunCycle"];
+
+
+    PERS string sendbuffer{5}:=["","","","",""];
+    PERS bool bufferState{5}:=[FALSE,FALSE,FALSE,FALSE,FALSE];
+
+    PERS string clientMessage1:=":c2.545;";
+    PERS string clientMessage2:=":lGesamtzahl der gefertigten Teile 81 st;";
+    PERS string clientMessage3:=" ";
+    PERS BOOL clientConnected:=FALSE;
+
+    PERS string clientMessageTest1:="";
+    PERS BOOL sendIsActive:=FALSE;
+    VAR socketdev client_socket_test{10};
+
+
+    PROC tpWriteSocket(string msg,string msgType)
+        ! Prevent parallel call of this method from different tasks
+        IF NOT sendIsActive THEN
+            sendIsActive:=True;
+            sendData msg,msgType;
+        ELSE
+            ! TODO Buffer all incoming messages if send is active
+        ENDIF
+    ENDPROC
+
+    PROC sendData(string msg,string msgType)
+        VAR string data;
+        VAR num i:=1;
+        VAR bool isRunning;
+
+        data:=msgType+msg+";";
+        i:=1;
+        isRunning:=TRUE;
+
+        WaitTime 0.08;
+        ! Reduce speed that send thread is faster...
+
+        WHILE isRunning DO
+            IF (NOT bufferState{i}) THEN
+                sendbuffer{i}:=data;
+                bufferState{i}:=TRUE;
+                isRunning:=FALSE;
+            ELSE
+                i:=i+1;
+            ENDIF
+            IF (i>=5) THEN
+                TPwrite "Socket send buffer overload.";
+                i:=1;
+                sendbuffer{i}:=data;
+                bufferState{i}:=TRUE;
+                isRunning:=FALSE;
+            ENDIF
+        ENDWHILE
+        sendIsActive:=FALSE;
+    ENDPROC
+ENDMODULE

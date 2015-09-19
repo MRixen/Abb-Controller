@@ -41,6 +41,7 @@ MODULE ServerComm
     ENDPROC
 	! TODO: Ping to signal alive...
 	! TODO: Optimize reconnection
+    ! TODO: Make it possible that more clients can connect to server
 
     PROC waitForClients()
         TEST state
@@ -53,12 +54,12 @@ MODULE ServerComm
         CASE 2:
             ! Throw error: ERR_SOCK_CLOSED, ERR_SOCK_ADDR_INUSE
             SocketBind server_socket,IP,port;
-			IF(DOutput(showServerCmts) = 1) TPwrite "Bind to " + IP + ":" + ValToStr(port);
+			IF(DOutput(showSocketCmts) = 1) TPwrite "Bind to " + IP + ":" + ValToStr(port);
             state:=3;
         CASE 3:
             ! Throw error: ERR_SOCK_CLOSED
             SocketListen server_socket;
-			IF(DOutput(showServerCmts) = 1) TPwrite "Listening on socket.";
+			IF(DOutput(showSocketCmts) = 1) TPwrite "Listening on socket.";
             state:=4;
         CASE 4:			
             WHILE listening DO
@@ -66,7 +67,7 @@ MODULE ServerComm
                     SocketAccept server_socket,client_socket{i}\Time:=WAIT_MAX;
                     clientConnected := TRUE;
                     WaitTime 1;
-					IF(DOutput(showServerCmts) = 1) TPwrite "Accept client no. " + ValToStr(i);
+					IF(DOutput(showSocketCmts) = 1) TPwrite "Accept client no. " + ValToStr(i);
                     i:=i+1;
                 ELSE
                     listening:=FALSE;
@@ -86,23 +87,23 @@ MODULE ServerComm
 
     ERROR
         IF ERRNO=ERR_SOCK_CLOSED THEN
-		IF(DOutput(showServerCmts) = 1) TPwrite "Socket closed.";
+		IF(DOutput(showSocketCmts) = 1) TPwrite "Socket closed.";
             nRetries_Closed:=RemainingRetries();
             IF (nRetries_Closed>=2) THEN
-			IF(DOutput(showServerCmts) = 1) TPwrite "Initialize socket.";
+			IF(DOutput(showSocketCmts) = 1) TPwrite "Initialize socket.";
                 initSocket;
                 TRYNEXT;
             ENDIF
         ENDIF
         IF ERRNO=ERR_SOCK_ADDR_INUSE THEN
-		IF(DOutput(showServerCmts) = 1) TPwrite "Soccket addres in use.";
+		IF(DOutput(showSocketCmts) = 1) TPwrite "Soccket addres in use.";
             nRetries_AddrUsed:=RemainingRetries();
             IF (nRetries_AddrUsed>=2) THEN
                 TRYNEXT;
             ENDIF
         ENDIF
         IF ERRNO=ERR_SOCK_TIMEOUT THEN
-		IF(DOutput(showServerCmts) = 1) TPwrite "Socket timeout.";
+		IF(DOutput(showSocketCmts) = 1) TPwrite "Socket timeout.";
             nRetries_Timeout:=RemainingRetries();
             IF (nRetries_Timeout>=2) THEN
                 !initSocket;
