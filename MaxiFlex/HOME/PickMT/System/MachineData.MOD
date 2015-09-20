@@ -24,13 +24,11 @@ MODULE MachineData
         mData:=["Multiflex","20184","2015","31.08.15","10.10.15",serial,version,rtype,cid,lanip,clang,dutyTime];
         WHILE TRUE DO
             IF clientConnected THEN
-                FOR i FROM 1 TO 3 DO
+			WaitTime 1;
                     FOR i FROM 1 TO MAX_DATA_SIZE DO
                         tpWriteSocket mData{i},":"+ValToStr(i-1)+":";
                     ENDFOR
-                ENDFOR
-                clientConnected:=FALSE;
-                WaitTime 0.08;
+                clientConnected:=FALSE;     
             ENDIF
             !WaitTime 10;
         ENDWHILE

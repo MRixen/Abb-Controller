@@ -14,7 +14,7 @@ MODULE Testmodule
     !4.1              07.02.2015       AK
     !***************************************************
     CONST robtarget pRefPosIn:=[[-2.24,590.62,323.84],[0.0166667,-0.711586,0.702224,0.0157748],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    CONST robtarget pRefPosOut:=[[590.34,477.38,722.10],[0.303598,-0.319853,0.89132,0.105221],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget pRefPosOut:=[[286.77,522.04,169.09],[0.010544,-0.774783,0.631957,0.0151744],[0,0,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pVPLage1:=[[684.31,366.32,658.71],[0.342048,-0.739306,0.522772,-0.251276],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pVPLage2:=[[546.67,429.45,668.04],[0.43431,-0.342097,0.833124,-0.0157661],[0,-1,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pVPLage3:=[[563.49,420.70,648.77],[0.08332,0.0738914,0.913894,0.390378],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -24,9 +24,9 @@ MODULE Testmodule
     ! For testing
     CONST robtarget pVPLage11:=[[819.09,7.89,726.36],[0.412219,-0.438411,0.555029,-0.574294],[0,0,-2,1],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pVPLage22:=[[805.63,10.20,732.97],[0.544355,0.578099,0.41343,0.445595],[-1,0,0,1],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    CONST robtarget pPickNew:=[[261.95,12.28,30.99],[0.056004,-0.757743,0.649585,-0.0269846],[1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget pPickNew:=[[-5.33,-90.21,-131.50],[0.0210707,0.029696,-0.999295,-0.00914865],[0,0,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     !
-    CONST robtarget pLage1:=[[11.74,66.11,-413.69],[0.0842813,0.692083,0.70522,0.128774],[0,-2,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget pLage1:=[[-416.81,-103.33,-3.24],[0.297107,0.891935,0.256194,-0.224819],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pLage2:=[[12.68,66.05,-415.17],[0.0336951,-0.986693,0.100565,-0.123244],[0,-2,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pLage3:=[[13.79,69.62,-416.83],[0.134418,-0.105505,0.985286,0.0034997],[-1,0,0,1],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pUnloadRef:=[[-49.44,75.13,268.09],[0.647615,-0.211858,-0.692403,0.237254],[-1,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -343,10 +343,10 @@ MODULE Testmodule
     ! Called from:   PickCamera
     !-----------------------------------------------------------------------------
     PROC PickCam()
-        ConfJ\Off;
-        ConfL\Off;
+        ConfJ\On;
+        ConfL\On;
         PathAccLim FALSE,TRUE\DecelMax:=8;
-        MoveJ\Conc,RelTool(pPickNew,0,0,-nPZ),vmax,z10,tGreifer\WObj:=wCamera;
+        MoveJ\Conc,RelTool(pPickNew,0,0,-50),vmax,z10,tGreifer\WObj:=wCamera;
         MoveL pPickNew,vmax,fine,tGreifer\WObj:=wCamera;
 
         Greifer\Zu\state:=Part;
@@ -354,7 +354,7 @@ MODULE Testmodule
 
         ! For testing
         Reset doClampOpenClose;
-        MoveJ\Conc,Offs(pPickNew,0,0,nPZ),vmax,z10,tGreifer\WObj:=wCamera;
+        MoveJ\Conc,Offs(pPickNew,0,0,50),vmax,z10,tGreifer\WObj:=wCamera;
         !
     ENDPROC
 

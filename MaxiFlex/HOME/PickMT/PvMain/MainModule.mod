@@ -42,13 +42,13 @@ MODULE MainModule
     !              otherwise the system might not behave correctly.
     !-----------------------------------------------------------------------------
     PROC Main()
-            Grundstellung\InitClampState;
-            InitializeMain;
-            InitPickVision;
+            Grundstellung;
+            !InitializeMain;
+            !InitPickVision;
             ResetCycletimes;
             setUnloadPositions;
             WHILE TRUE DO
-              CheckSystem;
+              !CheckSystem;
               CheckAndEnterState;
               WaitTime 0.01;
             ENDWHILE
@@ -93,13 +93,11 @@ MODULE MainModule
         ResetCycleTimes;
         IDelete iConfPick;
         CONNECT iConfPick WITH ConfirmPick;
-        IF NOT RobOS()%"SimMode"%;
     ENDPROC
     
     
     PROC setUnloadPositions()
-        pUnloadA:=pLage1A;
-        pUnloadB:=pLage1B;    
+        pUnload:=pLage1;   
     ENDPROC
 
     !-----------------------------------------------------------------------------

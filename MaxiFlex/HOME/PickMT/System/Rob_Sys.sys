@@ -112,19 +112,7 @@ MODULE Rob_Sys(SYSMODULE)
             EXIT;
         ENDIF
         IF Present(InitClampState) THEN
-            nAnswer:=UIMessageBox(\Header:="WARNUNG"\MsgArray:=["Ist das Spannfutter leer?"]\BtnArray:=["Ja","Nein"]\Icon:=iconWarning);
-            IF nAnswer=1 THEN
-                mAnswer:=UIMessageBox(\Header:="WARNUNG"\MsgArray:=["Ist das Spannfutter wirklich frei?"]\BtnArray:=["Ja","Nein"]\Icon:=iconWarning);
-                IF mAnswer=1 THEN
-                    ! Baz.State und beide Futter auf leer setzen
-                    Baz.ClampA:=Empty;
-                    Baz.State:=Empty;
-                ELSEIF mAnswer=2 THEN
-                    ! Nichts tun
-                ENDIF
-            ELSEIF nAnswer=2 THEN
-                ! Nichts tun
-            ENDIF
+            
         ENDIF
          IF Present(emptyCycle) THEN
             Greifer\Auf;

@@ -38,7 +38,7 @@ MODULE EventMessages
             firstCycleStart:=0;
         ENDIF
         !tpWriteSocket ValToStr(robotState)+"_"+ValToStr(err_domain)+"_"+ValToStr(err_number)+"_"+str1+"_"+str2+"_"+str3+"_"+str4+"_"+str5,":e:";    ! String too long because there ist too much load in str1...5 
-        TPwrite "Event... domain: "+ValToStr(err_domain) + "_number: " + ValToStr(err_number);
+        TPwrite ValToStr(robotState)+"_"+ValToStr(err_domain) + "_" + ValToStr(err_number) + "_" + str1 + "_" + str2;
 		tpWriteSocket ValToStr(robotState)+"::"+ValToStr(err_domain)+"::"+ValToStr(err_number)+"::"+str1+"::"+"X"+"::"+"X"+"::"+"X"+"::"+"X",":e:";
     ENDTRAP
 ENDMODULE
