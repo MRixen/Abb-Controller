@@ -45,7 +45,7 @@ MODULE MainModule
             Grundstellung;
             !InitializeMain;
             !InitPickVision;
-            ResetCycletimes;
+            PulseDO\PLength:=0.1,resetCTpulser;
             setUnloadPositions;
             WHILE TRUE DO
               !CheckSystem;

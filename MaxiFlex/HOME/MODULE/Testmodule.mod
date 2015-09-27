@@ -87,7 +87,7 @@ MODULE Testmodule
             sState:="Position_n";
             !ENDIF
         CASE "Position_n":
-            NextCycleTime;
+            PulseDO\PLength:=0.1,nextCTpulser;
             Position_1;
             sState:="Idle";
         CASE "NIOCycle":

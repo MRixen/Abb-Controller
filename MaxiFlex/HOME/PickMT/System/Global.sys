@@ -37,7 +37,8 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 		IF (cntr>=50) THEN
 			cntr:=1;
         ENDIF
-		!WaitTime 0.16;
     ENDPROC
+	
+	
 
 ENDMODULE
