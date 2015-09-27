@@ -65,7 +65,7 @@ MODULE ServerComm
             WHILE listening DO
                 IF i<=MAX_CLIENTS THEN					
                     SocketAccept server_socket,client_socket{i}\Time:=WAIT_MAX;    
-					WaitTime 1.5;
+					WaitTime 1;
                     clientConnected := TRUE;											
 					IF(DOutput(showSocketCmts) = 1) TPwrite "Accept client no. " + ValToStr(i);
                     i:=i+1;
