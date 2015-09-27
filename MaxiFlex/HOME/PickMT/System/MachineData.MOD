@@ -11,6 +11,8 @@ MODULE MachineData
     VAR string lanip;
     VAR string clang;
     VAR string dutyTime;
+	
+	VAR bool isSending;
 
     PROC main()
         serial:=GetSysInfo(\SerialNo);
@@ -20,17 +22,19 @@ MODULE MachineData
         lanip:=GetSysInfo(\LanIp);
         clang:=GetSysInfo(\CtrlLang);
         dutyTime:=GetServiceInfo(ROB_1\DutyTimeCnt);
+		
+		isSending := TRUE;
 
         mData:=["Multiflex","20184","2015","31.08.15","10.10.15",serial,version,rtype,cid,lanip,clang,dutyTime];
-        WHILE TRUE DO
-            IF clientConnected THEN
-			WaitTime 1;
+        WHILE isSending DO
+            IF clientConnected THEN					
                     FOR i FROM 1 TO MAX_DATA_SIZE DO
                         tpWriteSocket mData{i},":"+ValToStr(i-1)+":";
                     ENDFOR
-                clientConnected:=FALSE;     
+                clientConnected:=FALSE;   
+				isSending:=FALSE;				
             ENDIF
-            !WaitTime 10;
         ENDWHILE
+		WaitTime 5;
     ENDPROC
 ENDMODULE

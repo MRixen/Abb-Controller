@@ -15,7 +15,7 @@ MODULE Testmodule
     !***************************************************
     CONST robtarget pRefPosIn:=[[-2.24,590.62,323.84],[0.0166667,-0.711586,0.702224,0.0157748],[1,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pRefPosOut:=[[286.77,522.04,169.09],[0.010544,-0.774783,0.631957,0.0151744],[0,0,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-    CONST robtarget pVPLage1:=[[684.31,366.32,658.71],[0.342048,-0.739306,0.522772,-0.251276],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget pVPLage1:=[[711.72,179.01,524.04],[0.333062,-0.653699,0.608808,-0.301827],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pVPLage2:=[[546.67,429.45,668.04],[0.43431,-0.342097,0.833124,-0.0157661],[0,-1,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pVPLage3:=[[563.49,420.70,648.77],[0.08332,0.0738914,0.913894,0.390378],[0,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pNotReach:=[[-87.84,-1032.82,734.74],[0.323188,0.660794,0.559778,-0.38151],[-2,-1,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -26,7 +26,7 @@ MODULE Testmodule
     CONST robtarget pVPLage22:=[[805.63,10.20,732.97],[0.544355,0.578099,0.41343,0.445595],[-1,0,0,1],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pPickNew:=[[-5.33,-90.21,-131.50],[0.0210707,0.029696,-0.999295,-0.00914865],[0,0,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     !
-    CONST robtarget pLage1:=[[-416.81,-103.33,-3.24],[0.297107,0.891935,0.256194,-0.224819],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    CONST robtarget pLage1:=[[862.50,266.54,618.42],[0.494696,-0.651013,0.419097,-0.394735],[0,-1,-1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pLage2:=[[12.68,66.05,-415.17],[0.0336951,-0.986693,0.100565,-0.123244],[0,-2,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pLage3:=[[13.79,69.62,-416.83],[0.134418,-0.105505,0.985286,0.0034997],[-1,0,0,1],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget pUnloadRef:=[[-49.44,75.13,268.09],[0.647615,-0.211858,-0.692403,0.237254],[-1,0,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -38,8 +38,6 @@ MODULE Testmodule
 
     ! Copy position because there are the same
     VAR robtarget pUnload:=[[0,0,0],[0,0,0,0],[0,-1,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
-
-    VAR num cntr := 1;
 
     ! Only for simulation
     !PERS BOOL openClamp;
@@ -90,16 +88,7 @@ MODULE Testmodule
             !ENDIF
         CASE "Position_n":
             NextCycleTime;
-            !IF cntr = 10 THEN
-                !Position_2;
-                !Position_1;
-            !ELSE
-                Position_1;
-                !IF cntr >= 10 THEN
-                !     cntr := 1;
-                !ENDIF              
-            !ENDIF
-            !cntr := cntr + 1;
+            Position_1;
             sState:="Idle";
         CASE "NIOCycle":
             NIOCycle;
@@ -115,7 +104,7 @@ MODULE Testmodule
     PROC Position_1()
         ConfJ\On;
         ConfL\On;
-        MoveJ\Conc,pVPLage1,vmax,z10,tGreiferQuer\Wobj:=wobj0;
+        MoveJ pVPLage1,vmax,z10,tGreiferQuer\Wobj:=wobj0;
         !MoveJ Offs(pLage1,0,0,170),vmax,z40,tGreiferQuer;
         ! For testing
         !MoveJ \Conc, pVPLage11,vmax,z100,tGreiferQuer;
@@ -131,32 +120,6 @@ MODULE Testmodule
         ENDIF
     ENDPROC
 
-    PROC Position_2()
-        ConfJ\On;
-        ConfL\On;
-        ! Test error messages
-        MoveL pNotReach, vmax, fine, tGreiferQuer\WObj:=wobj0;
-    ENDPROC
-
-    PROC Position_3()
-        ConfJ\On;
-        ConfL\On;
-        MoveJ\conc,pVPLage3,vmax,z200,tGreiferQuer\Wobj:=wobj0;
-        !MoveJ Offs(pLage2,0,0,170),vmax,z40,tGreiferQuer;
-        ! For testing
-        !MoveJ \Conc, pVPLage22,vmax,z100,tGreiferQuer;
-        !
-        !ComInBAZ;
-        IF ((diEmptyCycle=0) OR loadCycleActive) THEN
-            TEST GetClamp()
-            CASE "A":
-                LoadClamp_P3;
-            DEFAULT:
-                EmptyGripper;
-            ENDTEST
-        ENDIF
-    ENDPROC
-
     !-----------------------------------------------------------------------------
     ! Procedure: LoadClampA_Px
     ! Date: 04.02.2015     Version: 1.0     Programmer: AK
@@ -164,19 +127,19 @@ MODULE Testmodule
     ! Description: Beladen Spannbacke A. Position 1 von rechts. Position 2 von links.
     !-----------------------------------------------------------------------------
     PROC LoadClamp_P1()
-        MoveJ\Conc,RelTool(pLage1,0,0,-50),vmax,z10,tGreiferQuer\WObj:=wBazA;
+        !MoveJ RelTool(pLage1,0,0,-50),vmax,z10,tGreiferQuer\WObj:=wBazA;
         !WaitUntil Spannbacke(\A\Auf);
         PathAccLim FALSE,TRUE\DecelMax:=7;
-        MoveL pLage1,vmax,fine,tGreiferQuer\WObj:=wBazA;
+        MoveL pLage1,vmax,fine,tGreiferQuer\WObj:=wobj0;
         PathAccLim FALSE,FALSE;
         WaitTime 0.01;
         !IF Spannbacke(\A\Zu\state:=Part) THEN
         !   Greifer\Auf;
         SoftDeact;
-        MoveL pLage1,vmax,fine,tGreiferQuer\WObj:=wBazA;
+        !MoveL pLage1,vmax,fine,tGreiferQuer\WObj:=wBazA;
         !
-        MoveL RelTool(pLage1,0,0,-180),vmax,z10,tGreiferQuer\WObj:=wBazA;
-        MoveJ\Conc,pVPLage1,vmax,z200,tGreiferQuer\Wobj:=wobj0;
+        !MoveL RelTool(pLage1,0,0,-180),vmax,z10,tGreiferQuer\WObj:=wBazA;
+        MoveJ pVPLage1,vmax,z200,tGreiferQuer\Wobj:=wobj0;
         !MoveJ pVPLage1,vmax, z10,tGreiferQuer\WObj:=wBazA;
         loadCycleActive:=TRUE;
         !ELSE
@@ -187,56 +150,6 @@ MODULE Testmodule
         !            TriggJ pVPLage1,vmax,tTurnStraightOn\T2:=tTurnCrossOff,z100,tGreiferQuer;
         !            EmptyGripper;
         !ENDIF
-    ENDPROC
-
-    PROC LoadClamp_P2()
-        MoveJ\Conc,RelTool(pLage2,0,0,-50),vmax,z10,tGreiferQuer\WObj:=wBazA;
-        WaitUntil Spannbacke(\A\Auf);
-        PathAccLim FALSE,TRUE\DecelMax:=7;
-        MoveL pLage2,vmax,fine,tGreiferQuer\WObj:=wBazA;
-        PathAccLim FALSE,FALSE;
-        WaitTime 0.01;
-        IF Spannbacke(\A\Zu\state:=Part) THEN
-            Greifer\Auf;
-            SoftDeact;
-            MoveL pLage2,vmax,fine,tGreiferQuer\WObj:=wBazA;
-            !
-            MoveL RelTool(pLage2,0,0,-180),vmax,z100,tGreiferQuer\WObj:=wBazA;
-            TriggJ pVPLage2,vmax,tTurnStraightOn\T2:=tTurnCrossOff,z100,tGreiferQuer;
-            loadCycleActive:=TRUE;
-        ELSE
-            SoftDeact;
-            MoveL pLage2,vmax,fine,tGreiferQuer\WObj:=wBazA;
-            !
-            MoveL RelTool(pLage2,0,0,-180),vmax,z100,tGreiferQuer\WObj:=wBazA;
-            TriggJ pVPLage2,vmax,tTurnStraightOn\T2:=tTurnCrossOff,z100,tGreiferQuer;
-            EmptyGripper;
-        ENDIF
-    ENDPROC
-
-    PROC LoadClamp_P3()
-        MoveJ\Conc,RelTool(pLage3,0,0,-50),vmax,z10,tGreiferQuer\WObj:=wBazA;
-        WaitUntil Spannbacke(\A\Auf);
-        PathAccLim FALSE,TRUE\DecelMax:=7;
-        MoveL pLage3,vmax,fine,tGreiferQuer\WObj:=wBazA;
-        PathAccLim FALSE,FALSE;
-        WaitTime 0.01;
-        IF Spannbacke(\A\Zu\state:=Part) THEN
-            Greifer\Auf;
-            SoftDeact;
-            MoveL pLage3,vmax,fine,tGreiferQuer\WObj:=wBazA;
-            !
-            MoveL RelTool(pLage3,0,0,-180),vmax,z100,tGreiferQuer\WObj:=wBazA;
-            TriggJ pVPLage3,vmax,tTurnStraightOn\T2:=tTurnCrossOff,z100,tGreiferQuer;
-            loadCycleActive:=TRUE;
-        ELSE
-            SoftDeact;
-            MoveL pLage3,vmax,fine,tGreiferQuer\WObj:=wBazA;
-            !
-            MoveL RelTool(pLage3,0,0,-180),vmax,z100,tGreiferQuer\WObj:=wBazA;
-            TriggJ pVPLage3,vmax,tTurnStraightOn\T2:=tTurnCrossOff,z100,tGreiferQuer;
-            EmptyGripper;
-        ENDIF
     ENDPROC
 
     !-----------------------------------------------------------------------------
@@ -346,7 +259,7 @@ MODULE Testmodule
         ConfJ\On;
         ConfL\On;
         PathAccLim FALSE,TRUE\DecelMax:=8;
-        MoveJ\Conc,RelTool(pPickNew,0,0,-50),vmax,z10,tGreifer\WObj:=wCamera;
+        MoveJ RelTool(pPickNew,0,0,-300), vmax, z200, tGreifer\WObj:=wCamera;
         MoveL pPickNew,vmax,fine,tGreifer\WObj:=wCamera;
 
         Greifer\Zu\state:=Part;
@@ -354,7 +267,7 @@ MODULE Testmodule
 
         ! For testing
         Reset doClampOpenClose;
-        MoveJ\Conc,Offs(pPickNew,0,0,50),vmax,z10,tGreifer\WObj:=wCamera;
+        MoveJ Offs(pPickNew,0,0,300), vmax, z200, tGreifer\WObj:=wCamera;
         !
     ENDPROC
 
@@ -367,14 +280,14 @@ MODULE Testmodule
     ! Called from:   Main
     !-----------------------------------------------------------------------------
     PROC RefPosIn()
-        ConfJ\On;
-        ConfL\On;
-        IF bFirstRefPos=TRUE THEN
-            bFirstRefPos:=FALSE;
-            MoveJ\Conc,pRefPosIn,v500,z10,tGreifer\WObj:=wobj0;
-        ELSE
-            MoveJ\Conc,pRefPosIn,vmax,z10,tGreifer\WObj:=wobj0;
-        ENDIF
+!        ConfJ\On;
+!        ConfL\On;
+!        IF bFirstRefPos=TRUE THEN
+!            bFirstRefPos:=FALSE;
+!            MoveJ pRefPosIn,v500,z10,tGreifer\WObj:=wobj0;
+!        ELSE
+!            MoveJ pRefPosIn,vmax,z10,tGreifer\WObj:=wobj0;
+!        ENDIF
     ENDPROC
 
     !-----------------------------------------------------------------------------
@@ -386,8 +299,8 @@ MODULE Testmodule
     ! Called from:   Main
     !-----------------------------------------------------------------------------
     PROC RefPosOut()
-        ConfJ\On;
-        ConfL\On;
-        MoveJ\Conc,pRefPosOut,vmax,z10,tGreifer\WObj:=wobj0;
+!        ConfJ\On;
+!        ConfL\On;
+!        MoveJ pRefPosOut,vmax,z10,tGreifer\WObj:=wobj0;
     ENDPROC
 ENDMODULE

@@ -111,8 +111,8 @@ MODULE Common(SYSMODULE)
     !# -----------------------
     CONST num TOTAL_NUM_OF_CYCLES:=50;
     PERS bool bFirstCycle:=FALSE;
-    PERS num nCycleTime:=2.543;
-    PERS num nTotalCycleTime:=2.54348;
+    PERS num nCycleTime:=2.059;
+    PERS num nTotalCycleTime:=2.05688;
     VAR clock cCycleTime;
     VAR num nCycles;
     VAR num nCyclesShow;
@@ -339,13 +339,13 @@ MODULE Common(SYSMODULE)
             ! Print times on FP
             TPErase;
 
-            tpWriteSocket "Neuester Zyklus "+ValToStr(nCycleTime)+" s",":l:";
+            tpWriteSocket "Gesamtzahl der gefertigten Teile:: "+ValToStr(nCyclesShow),":l:";
 			tpWriteSocket ValToStr(nCycleTime),":c:";
 
-            TPWrite "Zykluszeit basiert auf den "+ValToStr(TOTAL_NUM_OF_CYCLES)+" neusten";
-            TPWrite "Teilen: "+ValToStr(nTotalCycleTime)+" s";
-            TPWrite "Neuester Zyklus: "+ValToStr(nCycleTime)+" s";
-            TPWrite "Gesamtzahl der gefertigten Teile: "+ValToStr(nCyclesShow)+" st";
+            !TPWrite "Zykluszeit basiert auf den "+ValToStr(TOTAL_NUM_OF_CYCLES)+" neusten";
+            !TPWrite "Teilen: "+ValToStr(nTotalCycleTime)+" s";
+            !TPWrite "Neuester Zyklus: "+ValToStr(nCycleTime)+" s";
+            !TPWrite "Gesamtzahl der gefertigten Teile: "+ValToStr(nCyclesShow)+" st";
             ClkReset cCycleTime;
 
 

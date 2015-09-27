@@ -1,6 +1,4 @@
 MODULE EventMessages
-    VAR num cntr:=0;
-
     VAR intnum err_int;
     VAR trapdata err_data;
     VAR errdomain err_domain;
@@ -18,7 +16,7 @@ MODULE EventMessages
         CONNECT err_int WITH err_trap;
         IError COMMON_ERR,TYPE_ALL,err_int;
         WHILE TRUE DO
-            WaitTime 0.1;
+            WaitTime 0.2;
         ENDWHILE
     ENDPROC
 

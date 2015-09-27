@@ -36,7 +36,7 @@ MODULE ServerComm
     PROC main()
         WHILE TRUE DO
             waitForClients;
-            WaitTime 0.05;
+            WaitTime 0.01;
         ENDWHILE
     ENDPROC
 	! TODO: Ping to signal alive...
@@ -64,22 +64,23 @@ MODULE ServerComm
         CASE 4:			
             WHILE listening DO
                 IF i<=MAX_CLIENTS THEN					
-                    SocketAccept server_socket,client_socket{i}\Time:=WAIT_MAX;
-                    clientConnected := TRUE;
-                    WaitTime 1;
+                    SocketAccept server_socket,client_socket{i}\Time:=WAIT_MAX;    
+					WaitTime 1.5;
+                    clientConnected := TRUE;											
 					IF(DOutput(showSocketCmts) = 1) TPwrite "Accept client no. " + ValToStr(i);
                     i:=i+1;
                 ELSE
                     listening:=FALSE;
                 ENDIF
             ENDWHILE
-				FOR i FROM 1 TO 5 DO
+				FOR i FROM 1 TO 50 DO
 					IF (bufferState{i}) THEN
-                        TPWrite "send data";
 						SocketSend client_socket{1}\Str:=sendbuffer{i};
 						sendbuffer{i} := "";
 						bufferState{i} := false;
+						WaitTime 0.3;
 					ENDIF
+					
 				ENDFOR
         DEFAULT:
 

@@ -1,0 +1,193 @@
+MODULE PVSLAVE(SYSMODULE)
+  !-----------------------------------------------------------------------------
+  !
+  ! Module:      PVSLAVE
+  !
+  ! Revision:    2.0
+  !
+  ! Description: This is the program module for PickVision Slave through robot
+  !              configuration. User is adviced not to make any changes to this
+  !              file.
+  !
+  ! Copyright (c) Svensk Industriautomation AB 2011
+  ! All rights reserved
+  !
+  !-----------------------------------------------------------------------------
+  PERS num nSlaveAutoStart:=0;
+  PERS num nSlaveCycleStop:=0;
+  ! use nSlaveSelectId for single cam systems
+  PERS num nSlaveSelectId:=0;
+  PERS dnum nSlaveSelectIdCam1:=0;
+  PERS dnum nSlaveSelectIdCam2:=0;
+  PERS num nSlaveSelectIdCam3:=0;
+  PERS num nSlaveSelectIdCam4:=0;
+  PERS dnum nProgramnumber:=-1;
+  !sSlaveIdNumber is only use din old systems
+  PERS string sSlaveIdNumber:="";
+  VAR intnum iAutomaticStart;
+  VAR intnum iCycleStop;
+  VAR intnum iSelectId;
+  VAR intnum iSelectIdCam1;
+  VAR intnum iSelectIdCam2;
+  VAR intnum iSelectIdCam3;
+  VAR intnum iSelectIdCam4;
+  VAR intnum iMenue;
+  VAR bool bTimeFlag;
+
+  !
+  ! PickVision status constant values
+  ! PickVision Status Konstanten
+  CONST num PV_STOPPED:=1;
+  CONST num PV_STARTED:=2;
+  CONST num nMaxTime:=15;
+  CONST errnum erOnlyAuto:=1;
+  VAR errnum erVar;
+  PERS num nPVStat:=1;
+  PERS bool bConvertPos:=FALSE;
+
+  PROC InitMenue()
+    CONNECT iMenue WITH Menue;
+    ISignalDO dofP4,1,iMenue;
+	IF DOutput(showPVcmts)=1 THEN
+    TPWrite "InitMenue fertig";
+	ENDIF
+  ENDPROC 
+  
+  TRAP Menue
+    VAR num nAnswer;
+    Reset dofP4;
+    nAnswer:=UIMessageBox(\Header:="Bitte treffen Sie eine Auswahl!"
+            \MsgArray:=[stempty
+            ,"Ablauf stoppen und Rüststellung anfahren. (Stopp)",stempty
+            ,stempty]
+            \BtnArray:=["Stopp",stempty,stempty,stempty,"Abbruch"]
+            \MaxTime:=nMaxTime);
+    TEST nAnswer
+    CASE 1:
+      ConvertPos;
+    ENDTEST
+  ERROR
+    TRYNEXT;
+  ENDTRAP
+
+  PROC ConvertPos()
+    IF OpMode()=OP_AUTO THEN
+      bConvertPos:=TRUE;
+      Set DOF_EntryRequest;
+    ELSE
+      RAISE erOnlyAuto;
+    ENDIF 
+  ERROR
+    IF ERRNO=erOnlyAuto THEN
+      UIMsgBox\Header:="ConvertPos"
+      ,"Diese Funktion ist nur in Automatik zulässig!"
+      \Icon:=iconInfo\MaxTime:=5\BreakFlag:=erVar;
+    ENDIF
+      TRYNEXT;   
+  ENDPROC 
+  
+  PROC main()
+    InitMenue;
+    nPVStat:=1;
+    nSlaveAutoStart:=0;
+    nSlaveCycleStop:=0;
+    nSlaveSelectId:=0;
+    nSlaveSelectIdCam1:=0;
+    nSlaveSelectIdCam2:=0;
+    nSlaveSelectIdCam3:=0;
+    nSlaveSelectIdCam4:=0;
+    WHILE TRUE DO
+      IF DOutput(sdoAutoOn)=1 THEN
+        !------------------  Automatik Start  -------------------
+        IF sdiStart=1 AND nPVStat<>PV_STARTED THEN
+            !StartPV;
+            GOTO ENDE;
+        ENDIF
+        !------------------  Automatik Start  -------------------
+        !------------------  Programm wechsel -------------------
+        IF GInputDnum(dig_PgNr)<>nProgramnumber THEN
+          IF (nPVStat<>PV_STOPPED) THEN
+            StopPV;
+            Waittime 3;
+          ENDIF
+          SelectPgNr;
+          GOTO ENDE;
+        ENDIF
+        !------------------  Programm wechsel -------------------
+        !------------------  Automatik Stopp  -------------------
+        IF EntryRequest=1 AND nPVStat<>PV_STOPPED THEN
+            !StopPV;
+        ENDIF
+        !------------------  Automatik Stopp  -------------------
+      ENDIF
+      ENDE:
+      Waittime 0.1;
+    ENDWHILE
+  ENDPROC
+  
+  LOCAL PROC StopPV()
+      !nSlaveCycleStop:=0;
+      !WaitTime 0.01;
+      !nSlaveCycleStop:=1;
+      !WaitUntil nSlaveCycleStop=0 \MaxTime:=10 \TimeFlag:=bTimeFlag;
+      !IF bTimeFlag THEN
+        !nSlaveCycleStop:=0;
+        !TPWrite "Pickvision Stopp fehlgeschlagen.";
+        !RETURN;
+      !ENDIF
+      !nPVStat:=PV_STOPPED;
+  ENDPROC
+  
+  LOCAL PROC StartPV()
+      nSlaveAutoStart:=0;
+      WaitTime 0.01;
+      nSlaveAutoStart:=1;
+      WaitUntil nSlaveAutoStart=0 \MaxTime:=10 \TimeFlag:=bTimeFlag;
+      IF bTimeFlag THEN
+        nSlaveAutoStart:=0;
+		IF DOutput(showPVcmts)=1 THEN
+        TPWrite "Pickvision Start fehlgeschlagen.";
+		ENDIF
+        RETURN;
+      ENDIF
+      nPVStat:=PV_STARTED;
+  ENDPROC
+  
+  LOCAL PROC SelectPgNr()
+      nSlaveSelectIdCam1:=0;
+      WaitTime 0.01;
+	  IF DOutput(showPVcmts)=1 THEN
+      TPWrite ValToStr(GInputDnum(dig_PgNr)+1000000);
+	  ENDIF
+      nSlaveSelectIdCam1:=GInputDnum(dig_PgNr)+1000000;
+      IF NOT RobOS() WaitUntil nSlaveSelectIdCam1=0;
+      WaitUntil nSlaveSelectIdCam1=0 \MaxTime:=10 \TimeFlag:=bTimeFlag;
+      IF bTimeFlag OR DOutput(SelectIdNok)=1 THEN
+        nSlaveSelectIdCam1:=0;
+		IF DOutput(showPVcmts)=1 THEN
+        TPWrite "Programmanwahl Kamera 1 fehlgeschlagen";
+        TPWrite "Programmnummer=" + ValToStr(nProgramnumber) + " Soll=" + ValToStr(GInputDnum(dig_PgNr));
+		ENDIF
+        nProgramnumber:=-1;
+        RETURN;
+      ENDIF
+      WaitTime 3;
+      nSlaveSelectIdCam2:=0;
+      WaitTime 0.01;
+	  IF DOutput(showPVcmts)=1 THEN
+      TPWrite ValToStr(GInputDnum(dig_PgNr)+2000000);
+	  ENDIF
+      nSlaveSelectIdCam2:=GInputDnum(dig_PgNr)+2000000;
+      WaitUntil nSlaveSelectIdCam2=0 \MaxTime:=10 \TimeFlag:=bTimeFlag;
+      IF bTimeFlag OR DOutput(SelectIdNok)=1 THEN
+        nSlaveSelectIdCam2:=0;
+		IF DOutput(showPVcmts)=1 THEN
+        TPWrite "Programmanwahl Kamera 2 fehlgeschlagen";
+        TPWrite "Programmnummer=" + ValToStr(nProgramnumber) + " Soll=" + ValToStr(GInputDnum(dig_PgNr));
+		ENDIF
+        nProgramnumber:=-1;
+        RETURN;
+      ENDIF
+      nProgramnumber:=GInputDnum(dig_PgNr);
+  ENDPROC
+ENDMODULE
