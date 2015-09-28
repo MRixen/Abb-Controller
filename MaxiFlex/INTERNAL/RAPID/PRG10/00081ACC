@@ -2,7 +2,7 @@ MODULE CycleTimer
 
     CONST num TOTAL_NUM_OF_CYCLES:=50;
     PERS bool bFirstCycle:=FALSE;
-    PERS num nCycleTime:=2.029;
+    PERS num nCycleTime:=2.059;
     PERS num cycleTimeMean{TOTAL_NUM_OF_CYCLES};
     VAR clock cCycleTime;
     VAR num nCycles;

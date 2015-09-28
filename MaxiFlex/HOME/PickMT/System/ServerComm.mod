@@ -66,7 +66,8 @@ MODULE ServerComm
                 IF i<=MAX_CLIENTS THEN					
                     SocketAccept server_socket,client_socket{i}\Time:=WAIT_MAX;    
 					WaitTime 1;
-                    clientConnected := TRUE;											
+                    clientConnected := TRUE;	
+					WaitTime 0.3;
 					IF(DOutput(showSocketCmts) = 1) TPwrite "Accept client no. " + ValToStr(i);
                     i:=i+1;
                 ELSE
@@ -79,8 +80,10 @@ MODULE ServerComm
 						sendbuffer{i} := "";
 						bufferState{i} := false;
 						WaitTime 0.3;
-					ENDIF
-					
+					ELSE
+					! Send something to signal alive state
+						SocketSend client_socket{1}\Str:=" ";
+					ENDIF					
 				ENDFOR
         DEFAULT:
 

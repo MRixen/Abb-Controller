@@ -79,8 +79,10 @@ MODULE ServerComm
 						sendbuffer{i} := "";
 						bufferState{i} := false;
 						WaitTime 0.3;
-					ENDIF
-					
+					ELSE
+					! Send something to signal alive state
+						SocketSend client_socket{1}\Str:=" ";
+					ENDIF					
 				ENDFOR
         DEFAULT:
 
