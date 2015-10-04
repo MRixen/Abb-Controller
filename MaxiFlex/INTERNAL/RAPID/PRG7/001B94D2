@@ -13,10 +13,22 @@ MODULE ServerComm
     CONST num MAX_PORT_NUMBER:=4999;
     VAR bool listening:=true;
     VAR num i:=1;
+    VAR socketstatus socketStateServer;
+    VAR socketstatus socketStateClient1;
+    VAR socketstatus socketStateClient2;
+	VAR socketstatus socketStateClient3;
+    CONST num MAX_WAIT_FOR_CONNECTION:=5;
+    VAR string inMsg:="";
+    VAR string clientMessage1old:="";
+    VAR string clientMessage2old:="";
+	VAR string clientMessage3old:="";
     VAR socketdev client_socket{3};
     VAR num nRetries_Closed;
     VAR num nRetries_AddrUsed;
     VAR num nRetries_Timeout;
+    VAR num equalDataCounter1 := 0;
+	VAR num equalDataCounter2 := 0;
+	VAR num equalDataCounter3 := 0;
     CONST num MAX_EQUAL_DATA_AMOUNT := 25;
 
 
@@ -27,6 +39,7 @@ MODULE ServerComm
             WaitTime 0.01;
         ENDWHILE
     ENDPROC
+	! TODO: Optimize reconnection
     ! TODO: Make it possible that more clients can connect to server
 
     PROC waitForClients()
@@ -96,7 +109,7 @@ MODULE ServerComm
 		IF(DOutput(showSocketCmts) = 1) TPwrite "Socket timeout.";
             nRetries_Timeout:=RemainingRetries();
             IF (nRetries_Timeout>=0) THEN
-                initSocket;
+                !initSocket;
             ENDIF
         ENDIF
     ENDPROC
