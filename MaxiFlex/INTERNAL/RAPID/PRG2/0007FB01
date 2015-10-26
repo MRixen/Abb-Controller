@@ -16,16 +16,12 @@ MODULE Global(SYSMODULE,NOSTEPIN)
     ENDRECORD
 
     PERS bazstate Baz:=[FALSE,FALSE,1,1,1,"RunCycle"];
-    PERS string sendbuffer{50}:=["","","","","","","","","","",
+    PERS string sendbuffer{25}:=["","","","","","","","","","",
 								 "","","","","","","","","","",
-								 "","","","","","","","","","",
-								 "","","","","","","","","","",
-								 "","","","","","","","","",""];
-    PERS bool bufferState{50}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+								 "","","","",""];
+    PERS bool bufferState{25}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE];
+								FALSE,FALSE,FALSE,FALSE,FALSE];
     PERS BOOL clientConnected:=FALSE;
     PERS string clientMessageTest1:="";
 	PERS num cntr:=1;
@@ -34,7 +30,7 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 		sendbuffer{cntr}:=msgType+msg+";";
 		bufferState{cntr}:=TRUE;	
 		cntr:=cntr+1;
-		IF (cntr>=50) THEN
+		IF (cntr>=25) THEN
 			cntr:=1;
         ENDIF
     ENDPROC

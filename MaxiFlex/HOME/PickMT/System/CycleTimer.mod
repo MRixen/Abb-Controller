@@ -2,7 +2,7 @@ MODULE CycleTimer
 
     CONST num TOTAL_NUM_OF_CYCLES:=50;
     PERS bool bFirstCycle:=FALSE;
-    PERS num nCycleTime:=2.029;
+    PERS num nCycleTime:=2.03;
     PERS num cycleTimeMean{TOTAL_NUM_OF_CYCLES};
     VAR clock cCycleTime;
     VAR num nCycles;
@@ -76,8 +76,8 @@ MODULE CycleTimer
             tpWriteSocket "Gesamtzahl der gefertigten Teile:: "+ValToStr(nCyclesShow),":l:";
 			tpWriteSocket ValToStr(nCycleTime),":c1:";
 			tpWriteSocket ValToStr(cycleTimeMean{1}),":c2:";
-			tpWriteSocket cycleTimeActualString,":c3:";
-			tpWriteSocket cycleTimeMeanString,":c4:";
+			!tpWriteSocket cycleTimeActualString,":c3:"; ! Too much load in string (too long) -  We need a different option, like bytewise data
+			!tpWriteSocket cycleTimeMeanString,":c4:";
 			
             ClkReset cCycleTime;
             ELSE

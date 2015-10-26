@@ -2,7 +2,7 @@ MODULE CycleTimer
 
     CONST num TOTAL_NUM_OF_CYCLES:=50;
     PERS bool bFirstCycle:=FALSE;
-    PERS num nCycleTime:=2.059;
+    PERS num nCycleTime:=2.03;
     PERS num cycleTimeMean{TOTAL_NUM_OF_CYCLES};
     VAR clock cCycleTime;
     VAR num nCycles;
@@ -45,7 +45,7 @@ MODULE CycleTimer
             ClkStop cCycleTime;
             nCycleTime:=ClkRead(cCycleTime);
 
-            WriteCycleTimeLog(nCycleTime);
+            WriteCycleTimeLog nCycleTime, false;
 			
             ! store latset cycle time in the array
             FOR i FROM (TOTAL_NUM_OF_CYCLES-1) TO 1 DO
@@ -76,11 +76,13 @@ MODULE CycleTimer
             tpWriteSocket "Gesamtzahl der gefertigten Teile:: "+ValToStr(nCyclesShow),":l:";
 			tpWriteSocket ValToStr(nCycleTime),":c1:";
 			tpWriteSocket ValToStr(cycleTimeMean{1}),":c2:";
-			tpWriteSocket cycleTimeActualString,":c3:";
-			tpWriteSocket cycleTimeMeanString,":c4:";
+			!tpWriteSocket cycleTimeActualString,":c3:"; ! Too much load in string (too long) -  We need a different option, like bytewise data
+			!tpWriteSocket cycleTimeMeanString,":c4:";
 			
             ClkReset cCycleTime;
-
+            ELSE
+                ! Init header in log file
+                WriteCycleTimeLog nCycleTime, true;
         ENDIF
         ClkStart cCycleTime;
         bFirstCycle:=FALSE;
@@ -98,9 +100,10 @@ MODULE CycleTimer
         bFirstCycle:=TRUE;
     ENDPROC
 	
-    PROC WriteCycleTimeLog(num nCycleTime)
+    PROC WriteCycleTimeLog(num nCycleTime, bool setHeader)
         Open "home:/Taktzeitaufzeichnung.txt",ioFileLog\Append;
-        Write ioFileLog,CDate()+" "+CTime()+" Taktzeit: "+ValToStr(nCycleTime);
+        IF setHeader Write ioFileLog,"Date"+";"+"Time"+";"+"Cycle Time";
+        Write ioFileLog,CDate()+";"+CTime()+";"+ValToStr(nCycleTime);
         Close ioFileLog;
     ENDPROC
 ENDMODULE

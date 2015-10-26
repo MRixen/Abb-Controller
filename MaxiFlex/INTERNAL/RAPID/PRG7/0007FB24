@@ -28,6 +28,8 @@ MODULE ServerComm
         ENDWHILE
     ENDPROC
     ! TODO: Make it possible that more clients can connect to server
+	! TODO: Set PP to main on failure...
+	! TODO: Optimize reconnection
 
     PROC waitForClients()
         TEST state
@@ -51,24 +53,23 @@ MODULE ServerComm
             WHILE listening DO
                 IF i<=MAX_CLIENTS THEN					
                     SocketAccept server_socket,client_socket{i}\Time:=WAIT_MAX;    
-					WaitTime 1;
                     clientConnected := TRUE;	
-					WaitTime 0.3;
+					WaitTime 1;
 					IF(DOutput(showSocketCmts) = 1) TPwrite "Accept client no. " + ValToStr(i);
                     i:=i+1;
                 ELSE
                     listening:=FALSE;
                 ENDIF
             ENDWHILE
-				FOR i FROM 1 TO 50 DO
+				FOR i FROM 1 TO 25 DO
 					IF (bufferState{i}) THEN
 						SocketSend client_socket{1}\Str:=sendbuffer{i};
 						sendbuffer{i} := "";
 						bufferState{i} := false;
-						WaitTime 0.3;
+						WaitTime 0.15;
 					ELSE
 					! Send something to signal alive state
-						SocketSend client_socket{1}\Str:=" ";
+						!SocketSend client_socket{1}\Str:=" ";
 					ENDIF					
 				ENDFOR
         DEFAULT:
@@ -107,5 +108,10 @@ MODULE ServerComm
         i:=1;
         state:=1;
         listening:=TRUE;
+    ENDPROC
+    
+    PROC setPPmain()
+        ! Set pp of serverCom to main by emergency stop
+        PulseDO \PLength:=0.5, DOF_StartAtMain;
     ENDPROC
 ENDMODULE

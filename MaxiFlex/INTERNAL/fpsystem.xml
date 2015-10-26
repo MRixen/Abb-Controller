@@ -2,11 +2,6 @@
 <!--Comments: Settings for the FlexPendant.-->
 <FP>
   <USER name="">
-    <DATA id="ViewInManFull">
-      <PROP name="text" value="PARAM_TXT_VIEWINMANFULL" />
-      <PROP name="dll" value="" />
-      <PROP name="type" value="" />
-    </DATA>
     <DATA id="ViewInAuto">
       <PROP name="text" value="PARAM_TXT_VIEWINAUTO" />
       <PROP name="dll" value="TpsViewProductionWnd.dll" />
@@ -18,6 +13,10 @@
     </DATA>
     <DATA id="Display">
       <PROP name="BackgroundImage" value="(SYSTEM$)/ABB Hintergrundbild.gif" />
+    </DATA>
+    <DATA id="UserSettings">
+      <PROP name="RapidEditorFontIndex" value="5" />
+      <PROP name="LoadFileFilterIndex" value="3" />
     </DATA>
     <DATA id="UASViewLevel">
       <PROP name="text" value="PARAM_TXT_UASVIEWLEVEL" />
@@ -37,9 +36,6 @@
       <PROP name="Configuration" value="" />
       <PROP name="RapidModules" value="" />
       <PROP name="RapidPrograms" value="" />
-    </DATA>
-    <DATA id="Backup Restore">
-      <PROP name="LastPath" value="/USB/FFG01/" />
     </DATA>
     <DATA id="Programmable Key_2">
       <PROP name="type" value="Output" />
@@ -64,11 +60,17 @@
       <PROP name="Pos" value="10,20,40,60,90,120,178,275,412,587,801,1055,1347,1678,2048" />
       <PROP name="Neg" value="-10,-20,-40,-60,-90,-120,-178,-275,-412,-587,-801,-1055,-1347,-1678,-2048" />
     </DATA>
+    <DATA id="Programmable Key_4">
+      <PROP name="type" value="Output" />
+      <PROP name="allowInAuto" value="No" />
+      <PROP name="pressed" value="Toggle" />
+      <PROP name="target" value="doClampBClose" />
+    </DATA>
+    <DATA id="Backup Restore">
+      <PROP name="LastPath" value="/USB/FFG01/" />
+    </DATA>
     <DATA id="CtrlPnl Configuration">
       <PROP name="LASTPATH" value="ctrl:/hd0a/140-103298_ViegaSteuerung/HOME/PickMT/Instemp/" />
-    </DATA>
-    <DATA id="Calibration view">
-      <PROP name="Load Motor Calib path" value="" />
     </DATA>
     <DATA id="QuickSet">
       <PROP name="IncrementToggle" value="Medium" />
@@ -107,15 +109,13 @@
       <PROP name="pressed" value="Toggle" />
       <PROP name="target" value="doClampAOpen" />
     </DATA>
-    <DATA id="Programmable Key_4">
-      <PROP name="type" value="Output" />
-      <PROP name="allowInAuto" value="No" />
-      <PROP name="pressed" value="Toggle" />
-      <PROP name="target" value="doClampBClose" />
+    <DATA id="Calibration view">
+      <PROP name="Load Motor Calib path" value="" />
     </DATA>
-    <DATA id="UserSettings">
-      <PROP name="RapidEditorFontIndex" value="5" />
-      <PROP name="LoadFileFilterIndex" value="3" />
+    <DATA id="ViewInManFull">
+      <PROP name="text" value="PARAM_TXT_VIEWINMANFULL" />
+      <PROP name="dll" value="" />
+      <PROP name="type" value="" />
     </DATA>
   </USER>
 </FP>
