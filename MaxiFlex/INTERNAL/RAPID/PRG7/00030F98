@@ -29,7 +29,6 @@ MODULE ServerComm
     ENDPROC
     ! TODO: Make it possible that more clients can connect to server
 	! TODO: Implementation of handshake to check that data is send correctly
-	! TODO: Optimize reconnection
 
     PROC waitForClients()
         TEST state
@@ -62,13 +61,32 @@ MODULE ServerComm
                 ENDIF
             ENDWHILE
 				FOR i FROM 1 TO 25 DO
-					IF (bufferState{i}) THEN
-						SocketSend client_socket{1}\Str:=sendbuffer{i};
-						sendbuffer{i} := "";
-						bufferState{i} := false;
+					IF (bufferStateEvent{i}) THEN
+						SocketSend client_socket{1}\Str:=sendbufferEvent{i};
+						sendbufferEvent{i} := "";
+						bufferStateEvent{i} := false;
 						WaitTime 0.08;
-					ELSE
-					! Send something to signal alive state
+					ENDIF
+					IF (bufferStateCycleTime{i}) THEN
+						SocketSend client_socket{1}\Str:=sendbufferCycleTime{i};
+						sendbufferCycleTime{i} := "";
+						bufferStateCycleTime{i} := false;
+						WaitTime 0.08;
+					ENDIF
+					IF (bufferStateLogging{i}) THEN
+						SocketSend client_socket{1}\Str:=sendbufferLogging{i};
+						sendbufferLogging{i} := "";
+						bufferStateLogging{i} := false;
+						WaitTime 0.08;
+					ENDIF
+					IF (bufferStateMdata{i}) THEN
+						SocketSend client_socket{1}\Str:=sendbufferMdata{i};
+						sendbufferMdata{i} := "";
+						bufferStateMdata{i} := false;
+						WaitTime 0.08;
+					ENDIF
+					IF ((NOT bufferStateEvent{i}) AND (NOT bufferStateCycleTime{i}) AND (NOT bufferStateLogging{i}) AND (NOT bufferStateMdata{i})) THEN
+						! Send something to signal alive state
 						SocketSend client_socket{1}\Str:=":p:;";
 					ENDIF					
 				ENDFOR
@@ -109,10 +127,12 @@ MODULE ServerComm
         i:=1;
         state:=1;
         listening:=TRUE;
+		clientConnected:=FALSE; 
     ENDPROC
     
     PROC setPPmain()
         ! Set pp of serverCom to main by emergency stop
         PulseDO \PLength:=0.5, DOF_StartAtMain;
+		TPwrite "inside setPPmain";
     ENDPROC
 ENDMODULE

@@ -15,6 +15,8 @@ MODULE CycleTimer
 	
 	VAR intnum nextCT;
 	VAR intnum resetCT;
+	
+	PERS num cntr:=1;
 
     PROC main()
 		CONNECT nextCT WITH nextCTtrap;
@@ -105,5 +107,16 @@ MODULE CycleTimer
         IF setHeader Write ioFileLog,"Date"+";"+"Time"+";"+"Cycle Time";
         Write ioFileLog,CDate()+";"+CTime()+";"+ValToStr(nCycleTime);
         Close ioFileLog;
+    ENDPROC
+	
+	    PROC tpWriteSocket(string msg,string msgType)
+		IF clientConnected THEN
+		sendbufferCycleTime{cntr}:=msgType+msg+";";
+		bufferStateCycleTime{cntr}:=TRUE;	
+		cntr:=cntr+1;
+		IF (cntr>=25) THEN
+			cntr:=1;
+        ENDIF
+		ENDIF
     ENDPROC
 ENDMODULE

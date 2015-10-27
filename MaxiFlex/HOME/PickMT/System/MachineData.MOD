@@ -17,6 +17,8 @@ MODULE MachineData
     VAR string dateOfSOP;
 	
 	VAR bool isSending;
+	
+	PERS num cntr:=1;
 
     PROC main()
         serial:=GetSysInfo(\SerialNo);
@@ -36,14 +38,24 @@ MODULE MachineData
 
         mData:=[machineName,projectNumber,dateOfCreation,dateOfFAT,dateOfSOP,serial,version,rtype,cid,lanip,clang,dutyTime];
         WHILE isSending DO
-            IF clientConnected THEN					
+            IF (clientConnected AND isSending) THEN					
                     FOR i FROM 1 TO MAX_DATA_SIZE DO
                         tpWriteSocket mData{i},":"+ValToStr(i-1)+":";
-                    ENDFOR
-                clientConnected:=FALSE;   
+                    ENDFOR                 
 				isSending:=FALSE;				
             ENDIF
         ENDWHILE
 		WaitTime 5;
     ENDPROC
+
+    PROC tpWriteSocket(string msg,string msgType)
+	IF clientConnected THEN
+		sendbufferMdata{cntr}:=msgType+msg+";";
+		bufferStateMdata{cntr}:=TRUE;	
+		cntr:=cntr+1;
+		IF (cntr>=25) THEN
+			cntr:=1;
+        ENDIF
+		ENDIF
+    ENDPROC	
 ENDMODULE
