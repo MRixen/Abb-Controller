@@ -16,7 +16,7 @@ MODULE EventMessages
         CONNECT err_int WITH err_trap;
         IError COMMON_ERR,TYPE_ALL,err_int;
         WHILE TRUE DO
-            WaitTime 0.2;
+            WaitTime 0.01;
         ENDWHILE
     ENDPROC
 

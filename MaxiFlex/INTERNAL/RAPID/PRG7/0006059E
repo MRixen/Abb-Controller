@@ -19,16 +19,16 @@ MODULE ServerComm
     VAR num nRetries_Timeout;
     CONST num MAX_EQUAL_DATA_AMOUNT := 25;
 
-
+	VAR string receive_string;
 
     PROC main()
         WHILE TRUE DO
             waitForClients;
-            WaitTime 0.01;
+            !WaitTime 0.01;
         ENDWHILE
     ENDPROC
     ! TODO: Make it possible that more clients can connect to server
-	! TODO: Set PP to main on failure...
+	! TODO: Implementation of handshake to check that data is send correctly
 	! TODO: Optimize reconnection
 
     PROC waitForClients()
@@ -66,10 +66,10 @@ MODULE ServerComm
 						SocketSend client_socket{1}\Str:=sendbuffer{i};
 						sendbuffer{i} := "";
 						bufferState{i} := false;
-						WaitTime 0.15;
+						WaitTime 0.08;
 					ELSE
 					! Send something to signal alive state
-						!SocketSend client_socket{1}\Str:=" ";
+						SocketSend client_socket{1}\Str:=":p:;";
 					ENDIF					
 				ENDFOR
         DEFAULT:
@@ -83,7 +83,7 @@ MODULE ServerComm
             IF (nRetries_Closed>=0) THEN
 			IF(DOutput(showSocketCmts) = 1) TPwrite "Initialize socket.";
                 initSocket;
-                TRYNEXT;
+				TRYNEXT;
             ENDIF
         ENDIF
         IF ERRNO=ERR_SOCK_ADDR_INUSE THEN
@@ -98,6 +98,7 @@ MODULE ServerComm
             nRetries_Timeout:=RemainingRetries();
             IF (nRetries_Timeout>=0) THEN
                 initSocket;
+				TRYNEXT;
             ENDIF
         ENDIF
     ENDPROC
