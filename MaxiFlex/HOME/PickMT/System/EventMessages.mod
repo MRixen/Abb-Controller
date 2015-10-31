@@ -36,9 +36,7 @@ MODULE EventMessages
             robotState:=0;
             firstCycleStart:=0;
         ENDIF
-        !tpWriteSocket ValToStr(robotState)+"_"+ValToStr(err_domain)+"_"+ValToStr(err_number)+"_"+str1+"_"+str2+"_"+str3+"_"+str4+"_"+str5,":e:";    ! String too long because there ist too much load in str1...5 
-        TPwrite ValToStr(err_type);
-		tpWriteSocket ValToStr(robotState)+"::"+ValToStr(err_domain)+"::"+ValToStr(err_number)+"::"+ValToStr(err_type)+"::"+str1+"::"+"X"+"::"+"X"+"::"+"X"+"::"+"X",":e:";
+		tpWriteSocket ValToStr(robotState)+"::"+ValToStr(err_domain)+"::"+ValToStr(err_number)+"::"+ValToStr(err_type)+"::"+str1+"::"+"X"+"::"+"X"+"::"+"X"+"::"+"X",":e:"; ! Send only the first string (str1) because there is too much load in string when using str1...5 
     ENDTRAP
 	
 	    PROC tpWriteSocket(string msg,string msgType)

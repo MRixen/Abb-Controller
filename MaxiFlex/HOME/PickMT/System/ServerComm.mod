@@ -18,13 +18,13 @@ MODULE ServerComm
     VAR num nRetries_AddrUsed;
     VAR num nRetries_Timeout;
     CONST num MAX_EQUAL_DATA_AMOUNT := 25;
+	CONST num sendDelayTime := 0.08;
 
 	VAR string receive_string;
 
     PROC main()
         WHILE TRUE DO
             waitForClients;
-            !WaitTime 0.01;
         ENDWHILE
     ENDPROC
     ! TODO: Make it possible that more clients can connect to server
@@ -65,25 +65,25 @@ MODULE ServerComm
 						SocketSend client_socket{1}\Str:=sendbufferEvent{i};
 						sendbufferEvent{i} := "";
 						bufferStateEvent{i} := false;
-						WaitTime 0.08;
+						WaitTime sendDelayTime;
 					ENDIF
 					IF (bufferStateCycleTime{i}) THEN
 						SocketSend client_socket{1}\Str:=sendbufferCycleTime{i};
 						sendbufferCycleTime{i} := "";
 						bufferStateCycleTime{i} := false;
-						WaitTime 0.08;
+						WaitTime sendDelayTime;
 					ENDIF
 					IF (bufferStateLogging{i}) THEN
 						SocketSend client_socket{1}\Str:=sendbufferLogging{i};
 						sendbufferLogging{i} := "";
 						bufferStateLogging{i} := false;
-						WaitTime 0.08;
+						WaitTime sendDelayTime;
 					ENDIF
 					IF (bufferStateMdata{i}) THEN
 						SocketSend client_socket{1}\Str:=sendbufferMdata{i};
 						sendbufferMdata{i} := "";
 						bufferStateMdata{i} := false;
-						WaitTime 0.08;
+						WaitTime sendDelayTime;
 					ENDIF
 					IF ((NOT bufferStateEvent{i}) AND (NOT bufferStateCycleTime{i}) AND (NOT bufferStateLogging{i}) AND (NOT bufferStateMdata{i})) THEN
 						! Send something to signal alive state
@@ -130,9 +130,5 @@ MODULE ServerComm
 		clientConnected:=FALSE; 
     ENDPROC
     
-    PROC setPPmain()
-        ! Set pp of serverCom to main by emergency stop
-        PulseDO \PLength:=0.5, DOF_StartAtMain;
-		TPwrite "inside setPPmain";
-    ENDPROC
+
 ENDMODULE

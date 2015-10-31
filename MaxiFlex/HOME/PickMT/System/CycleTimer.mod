@@ -75,11 +75,10 @@ MODULE CycleTimer
             ! Print times on FP
             TPErase;
 
+			! Send logs and cycle time to remote console (smartphone)
             tpWriteSocket "Gesamtzahl der gefertigten Teile:: "+ValToStr(nCyclesShow),":l:";
 			tpWriteSocket ValToStr(nCycleTime),":c1:";
 			tpWriteSocket ValToStr(cycleTimeMean{1}),":c2:";
-			!tpWriteSocket cycleTimeActualString,":c3:"; ! Too much load in string (too long) -  We need a different option, like bytewise data
-			!tpWriteSocket cycleTimeMeanString,":c4:";
 			
             ClkReset cCycleTime;
             ELSE

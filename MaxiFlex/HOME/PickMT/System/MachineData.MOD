@@ -15,9 +15,7 @@ MODULE MachineData
     VAR string dateOfCreation;
     VAR string dateOfFAT;
     VAR string dateOfSOP;
-	
 	VAR bool isSending;
-	
 	PERS num cntr:=1;
 
     PROC main()
@@ -45,6 +43,7 @@ MODULE MachineData
 				isSending:=FALSE;				
             ENDIF
         ENDWHILE
+		! Give other threads enough time to process
 		WaitTime 5;
     ENDPROC
 
