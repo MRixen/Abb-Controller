@@ -20,11 +20,11 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 	! -----------------------------------------------------------------------------------------
 	! Buffer for events
 	! -----------------------------------------------------------------------------------------
-    PERS string sendbufferEvent{25}:=["","","","","","","","","","",
-								 "","","","","","","","","","",
+    PERS string sendbufferEvent{25}:=[":e:1::4::1587::3::ServerComm::X::X::X::X;",":e:1::4::223::3::ServerComm::X::X::X::X;",":e:1::1::20::1::7::X::X::X::X;",":e:1::1::48::3::ServerComm::X::X::X::X;",":e:1::1::126::1::7::X::X::X::X;","","","","","",
+								 "","","","","","","",":e:1::1::11::1::::X::X::X::X;","","",
 								 "","","","",""];
-    PERS bool bufferStateEvent{25}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+    PERS bool bufferStateEvent{25}:=[TRUE,TRUE,TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
 								FALSE,FALSE,FALSE,FALSE,FALSE];
 	! -----------------------------------------------------------------------------------------
 	
@@ -54,13 +54,13 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 	! -----------------------------------------------------------------------------------------
 	! Buffer for machine data
 	! -----------------------------------------------------------------------------------------
-	PERS string sendbufferMdata{25}:=["","","","","","","","","","",
-								 "","","","","","","","","","",
-								 "","","","",""];
-    PERS bool bufferStateMdata{25}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE];
+	PERS string sendbufferMdata{25}:=[":6:ROBOTWARE_5.61.2008.02;",":7:140T-6/0.8;",":8:VC;",":9:VC;",":10:de;",":11:0;",":1:20184;",":2:2015;",":3:31.08.15;",":4:10.10.15;",
+								 ":5:140-103298;",":6:ROBOTWARE_5.61.2008.02;",":7:140T-6/0.8;",":8:VC;",":9:VC;",":10:de;",":11:0;",":0:Multiflex;",":0:Multiflex;",":1:20184;",
+								 ":2:2015;",":3:31.08.15;",":4:10.10.15;",":5:140-103298;",""];
+    PERS bool bufferStateMdata{25}:=[TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,
+								TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,
+								TRUE,TRUE,TRUE,TRUE,FALSE];
 	! -----------------------------------------------------------------------------------------
 	
-    PERS BOOL clientConnected:=FALSE;
+    PERS BOOL clientConnected:=TRUE;
 ENDMODULE

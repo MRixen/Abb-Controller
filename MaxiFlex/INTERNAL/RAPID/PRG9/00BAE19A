@@ -16,7 +16,7 @@ MODULE MachineData
     VAR string dateOfFAT;
     VAR string dateOfSOP;
 	VAR bool isSending;
-	PERS num cntr:=1;
+	PERS num cntr:=13;
 
     PROC main()
         serial:=GetSysInfo(\SerialNo);

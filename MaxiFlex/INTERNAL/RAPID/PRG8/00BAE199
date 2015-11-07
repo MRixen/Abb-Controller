@@ -12,7 +12,7 @@ MODULE EventMessages
     VAR string str4:="";
     VAR string str5:="";
 	
-	PERS num cntr:=1;
+	PERS num cntr:=13;
 
     PROC main()
         CONNECT err_int WITH err_trap;

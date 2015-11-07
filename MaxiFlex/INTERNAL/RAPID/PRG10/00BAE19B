@@ -2,7 +2,7 @@ MODULE CycleTimer
 
     CONST num TOTAL_NUM_OF_CYCLES:=50;
     PERS bool bFirstCycle:=FALSE;
-    PERS num nCycleTime:=2.03;
+    PERS num nCycleTime:=2.031;
     PERS num cycleTimeMean{TOTAL_NUM_OF_CYCLES};
     VAR clock cCycleTime;
     VAR num nCycles;
@@ -16,7 +16,7 @@ MODULE CycleTimer
 	VAR intnum nextCT;
 	VAR intnum resetCT;
 	
-	PERS num cntr:=1;
+	PERS num cntr:=13;
 
     PROC main()
 		CONNECT nextCT WITH nextCTtrap;
