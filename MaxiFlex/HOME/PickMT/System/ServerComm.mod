@@ -61,31 +61,13 @@ MODULE ServerComm
                 ENDIF
             ENDWHILE
 				FOR i FROM 1 TO 25 DO
-					IF (bufferStateEvent{i}) THEN
-						SocketSend client_socket{1}\Str:=sendbufferEvent{i};
-						sendbufferEvent{i} := "";
-						bufferStateEvent{i} := false;
+					IF (bufferState{i}) THEN
+						SocketSend client_socket{1}\Str:=sendbuffer{i};
+						sendbuffer{i} := "";
+						bufferState{i} := false;
 						WaitTime sendDelayTime;
 					ENDIF
-					IF (bufferStateCycleTime{i}) THEN
-						SocketSend client_socket{1}\Str:=sendbufferCycleTime{i};
-						sendbufferCycleTime{i} := "";
-						bufferStateCycleTime{i} := false;
-						WaitTime sendDelayTime;
-					ENDIF
-					IF (bufferStateLogging{i}) THEN
-						SocketSend client_socket{1}\Str:=sendbufferLogging{i};
-						sendbufferLogging{i} := "";
-						bufferStateLogging{i} := false;
-						WaitTime sendDelayTime;
-					ENDIF
-					IF (bufferStateMdata{i}) THEN
-						SocketSend client_socket{1}\Str:=sendbufferMdata{i};
-						sendbufferMdata{i} := "";
-						bufferStateMdata{i} := false;
-						WaitTime sendDelayTime;
-					ENDIF
-					IF ((NOT bufferStateEvent{i}) AND (NOT bufferStateCycleTime{i}) AND (NOT bufferStateLogging{i}) AND (NOT bufferStateMdata{i})) THEN
+					IF (NOT bufferState{i}) THEN
 						! Send something to signal alive state
 						SocketSend client_socket{1}\Str:=":p:;";
 					ENDIF					
@@ -128,6 +110,7 @@ MODULE ServerComm
         state:=1;
         listening:=TRUE;
 		clientConnected:=FALSE; 
+        isSending:=TRUE;
     ENDPROC
     
 

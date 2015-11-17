@@ -17,50 +17,13 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 
     PERS bazstate Baz:=[FALSE,FALSE,1,1,1,"RunCycle"];
 	
-	! -----------------------------------------------------------------------------------------
-	! Buffer for events
-	! -----------------------------------------------------------------------------------------
-    PERS string sendbufferEvent{25}:=["","","","","","","","","","",
+	PERS string sendbuffer{25}:=["","","","","","","","","","",
 								 "","","","","","","","","","",
 								 "","","","",""];
-    PERS bool bufferStateEvent{25}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+    PERS bool bufferState{25}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 								FALSE,FALSE,FALSE,FALSE,FALSE];
-	! -----------------------------------------------------------------------------------------
-	
-	! -----------------------------------------------------------------------------------------
-	! Buffer for cylce time
-	! -----------------------------------------------------------------------------------------
-	PERS string sendbufferCycleTime{25}:=["","","","","","","","","","",
-								 "","","","","","","","","","",
-								 "","","","",""];
-								 
-    PERS bool bufferStateCycleTime{25}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE];
-	! -----------------------------------------------------------------------------------------
-	
-	! -----------------------------------------------------------------------------------------
-	! Buffer for logging
-	! -----------------------------------------------------------------------------------------
-	PERS string sendbufferLogging{25}:=["","","","","","","","","","",
-								 "","","","","","","","","","",
-								 "","","","",""];
-    PERS bool bufferStateLogging{25}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE];
-	! -----------------------------------------------------------------------------------------
-	
-	! -----------------------------------------------------------------------------------------
-	! Buffer for machine data
-	! -----------------------------------------------------------------------------------------
-	PERS string sendbufferMdata{25}:=["","","","","","","","","","",
-								 "","","","","","","","","","",
-								 "","","","",""];
-    PERS bool bufferStateMdata{25}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-								FALSE,FALSE,FALSE,FALSE,FALSE];
-	! -----------------------------------------------------------------------------------------
 	
     PERS BOOL clientConnected:=FALSE;
+    PERS BOOL isSending:=TRUE;
 ENDMODULE
