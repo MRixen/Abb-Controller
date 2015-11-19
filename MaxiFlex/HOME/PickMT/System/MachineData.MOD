@@ -47,14 +47,5 @@ MODULE MachineData
 		WaitTime 5;
     ENDPROC
 
-    PROC tpWriteSocket(string msg,string msgType)
-	IF clientConnected THEN
-		sendbufferMdata{cntr}:=msgType+msg+";";
-		bufferStateMdata{cntr}:=TRUE;	
-		cntr:=cntr+1;
-		IF (cntr>=25) THEN
-			cntr:=1;
-        ENDIF
-		ENDIF
-    ENDPROC	
+
 ENDMODULE

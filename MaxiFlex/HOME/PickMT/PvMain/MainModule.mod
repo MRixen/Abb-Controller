@@ -42,10 +42,11 @@ MODULE MainModule
     !              otherwise the system might not behave correctly.
     !-----------------------------------------------------------------------------
     PROC Main()
+			InitializeCam;
             Grundstellung;
             !InitializeMain;
-            !InitPickVision;
-            PulseDO\PLength:=0.1,resetCTpulser;
+            !InitPickVision;			
+            PulseDO\PLength:=0.5,resetCTpulser;
             setUnloadPositions;
             WHILE TRUE DO
               !CheckSystem;

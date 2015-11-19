@@ -108,14 +108,4 @@ MODULE CycleTimer
         Close ioFileLog;
     ENDPROC
 	
-	    PROC tpWriteSocket(string msg,string msgType)
-		IF clientConnected THEN
-		sendbufferCycleTime{cntr}:=msgType+msg+";";
-		bufferStateCycleTime{cntr}:=TRUE;	
-		cntr:=cntr+1;
-		IF (cntr>=25) THEN
-			cntr:=1;
-        ENDIF
-		ENDIF
-    ENDPROC
 ENDMODULE

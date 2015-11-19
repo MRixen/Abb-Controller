@@ -33,7 +33,7 @@ MODULE Diagnose
     ! CycleTimer
     CONST num TOTAL_NUM_OF_CYCLES:=50;
     PERS bool bFirstCycle:=FALSE;
-    PERS num nCycleTime:=2.03;
+    PERS num nCycleTime:=2.044;
     PERS num cycleTimeMean{TOTAL_NUM_OF_CYCLES};
     VAR clock cCycleTime;
     VAR num nCycles;
@@ -46,52 +46,33 @@ MODULE Diagnose
     VAR intnum nextCT;
     VAR intnum resetCT;
 
+    ! ArticleCounter
+    VAR num articleCounter;
+    VAR bool positionFound:=FALSE;
+    VAR num i:=1;
+    VAR intnum setArtCntr;
+    CONST num MAX_ARTICLE_DESCRIPTION_DATA:=3;
+    VAR string filename:="home:/LastUsedArticles.txt";
+    VAR string data{MAX_ARTICLE_DESCRIPTION_DATA}:=[" "," "," "];
+    VAR string header{MAX_ARTICLE_DESCRIPTION_DATA}:=["Article","Counter","CycleTime"];
+    ! Max. column amount= 3 (Article,Counter,CycleTime) + 2
 
-    PERS num cntrMachine:=1;
-    PERS num cntrCycle:=1;
-    PERS num cntrLogging:=1;
-    PERS num cntrEvent:=1;
+    PERS num cntr:=17;
 
+	!TODO EInheiten Zugriffsfehler
+	
     PROC main()
-        ! MachineData
-        serial:=GetSysInfo(\SerialNo);
-        version:=GetSysInfo(\SWVersion);
-        rtype:=GetSysInfo(\RobotType);
-        cid:=GetSysInfo(\CtrlId);
-        lanip:=GetSysInfo(\LanIp);
-        clang:=GetSysInfo(\CtrlLang);
-        dutyTime:=GetServiceInfo(ROB_1\DutyTimeCnt);
-        machineName:="Multiflex";
-        projectNumber:="20168";
-        dateOfCreation:="2015";
-        preAccept:="19.02.15";
-        finAccept:="KW 48-2015";
-        mData:=[machineName,projectNumber,dateOfCreation,preAccept,finAccept,serial,version,rtype,cid,lanip,clang,dutyTime];
-
-        ! EventMessages        
-        CONNECT err_int WITH err_trap;
-        IError COMMON_ERR,TYPE_ALL,err_int;
-
-        ! CycleTimer
-        CONNECT nextCT WITH nextCTtrap;
-        ISignalDO nextCTpulser,1,nextCT;
-        CONNECT resetCT WITH resetCTtrap;
-        ISignalDO resetCTpulser,1,resetCT;
-
+        initMachineData;
+        initEventMessages;
+        initCycleTimer;
+        initArticleCounter;
         WHILE TRUE DO
-            IF (clientConnected AND isSending) THEN
-                FOR i FROM 1 TO MAX_DATA_SIZE DO
-                    tpWriteSocket mData{i},":"+ValToStr(i-1)+":";
-                ENDFOR
-                isSending:=FALSE;
-            ENDIF
+            sendArticleAndInfo;
             WaitTime 0.01;
-
         ENDWHILE
-
     ENDPROC
 
-    TRAP err_trap
+    TRAP events
         GetTrapData err_data;
         ReadErrData err_data,err_domain,err_number,err_type\Str1:=str1\Str2:=str2\Str3:=str3\Str4:=str4\Str5:=str5;
 
@@ -116,6 +97,46 @@ MODULE Diagnose
     TRAP resetCTtrap
         ResetCycleTimes;
     ENDTRAP
+
+    TRAP artCntr
+        setArticlesAndCounters;
+    ENDTRAP
+
+    PROC setArticlesAndCounters()
+        ! Load articles from file
+        FOR row FROM 1 TO MAX_ARTICLE_COUNTER DO
+            lastArticleNames{row}:=ReadFromFile(filename,row,3);
+            lastArticleCounters{row}:=ReadFromFile(filename,row,4);
+        ENDFOR
+
+        ! Get article counter
+        i:=1;
+        WHILE ((i<=MAX_ARTICLE_COUNTER) AND (positionFound=FALSE)) DO
+            IF (lastArticleNames{i}=" ") THEN
+                lastArticleNames{i}:=actualProgName;
+                articleCounter:=i;
+                positionFound:=TRUE;
+            ELSEIF (lastArticleNames{i}=actualProgName) THEN
+                articleCounter:=i;
+                positionFound:=TRUE;
+            ELSEIF ((NOT (lastArticleNames{i}=" ")) AND (i=MAX_ARTICLE_COUNTER)) THEN
+                FOR j FROM 1 TO MAX_ARTICLE_COUNTER DO
+                    IF (j<MAX_ARTICLE_COUNTER) THEN
+                        lastArticleNamesTemp{j}:=lastArticleNames{j+1};
+                        lastArticleCountersTemp{j}:=lastArticleCounters{j+1};
+                    ENDIF
+                    lastArticleNamesTemp{MAX_ARTICLE_COUNTER}:=actualProgName;
+                    lastArticleNames{j}:=lastArticleNamesTemp{j};
+                    lastArticleCounters{j}:=lastArticleCountersTemp{j};
+                ENDFOR
+                articleCounter:=MAX_ARTICLE_COUNTER;
+                positionFound:=TRUE;
+            ENDIF
+            i:=i+1;
+        ENDWHILE
+        positionFound:=FALSE;
+    ENDPROC
+
 
     PROC NextCycleTime()
         ! skip calculation first cycle and start clock
@@ -151,18 +172,32 @@ MODULE Diagnose
                 cycleTimeActualString:=cycleTimeActualString+NumToStr(cycleTimeActual{i},1)+"_";
             ENDFOR
 
-            ! Print times on FP
-            TPErase;
-
             ! Send logs and cycle time to remote console (smartphone)
             tpWriteSocket "Gesamtzahl der gefertigten Teile:: "+ValToStr(nCyclesShow),":l:";
             tpWriteSocket ValToStr(nCycleTime),":c1:";
             tpWriteSocket ValToStr(cycleTimeMean{1}),":c2:";
+			
 
+            ! Save counter for actual article to array
+            lastArticleCounters{articleCounter}:=ValToStr(nCyclesShow);
+			tpWriteSocket " "+"::"+lastArticleCounters{i}+"::"+ValToStr(articleCounter),":a:";
+			
+            ! Set header
+            WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA,TRUE,TRUE, TRUE;
+            
+			!TODO Save actual date+time in array like lastArticleCounters{i}
+            FOR j FROM 1 TO MAX_ARTICLE_COUNTER DO
+                data{1}:=lastArticleNames{j};
+                data{2}:=lastArticleCounters{j};
+                IF (j<=articleCounter) THEN
+					data{3}:=ValToStr(nCycleTime);
+					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, FALSE, FALSE, TRUE;
+				ELSE 
+					data{3}:=" ";
+					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, FALSE, FALSE, FALSE;
+				ENDIF               
+            ENDFOR				
             ClkReset cCycleTime;
-        ELSE
-            ! Init header in log file
-            WriteCycleTimeLog nCycleTime,true;
         ENDIF
         ClkStart cCycleTime;
         bFirstCycle:=FALSE;
@@ -181,21 +216,157 @@ MODULE Diagnose
     ENDPROC
 
     PROC WriteCycleTimeLog(num nCycleTime,bool setHeader)
-        Open "home:/Taktzeitaufzeichnung.txt",ioFileLog\Append;
-        IF setHeader Write ioFileLog,"Date"+";"+"Time"+";"+"Cycle Time";
-        Write ioFileLog,CDate()+";"+CTime()+";"+ValToStr(nCycleTime);
-        Close ioFileLog;
+        !Open "home:/Taktzeitaufzeichnung.txt",ioFileLog\Append;
+        !IF setHeader Write ioFileLog,"Date"+";"+"Time"+";"+"Cycle Time";
+        !Write ioFileLog,CDate()+";"+CTime()+";"+ValToStr(nCycleTime);
+        ! Close ioFileLog;
     ENDPROC
 
+    PROC WriteToFile(string filename,string data{*},string header{*},num size,bool setHeader,bool overwrite, bool withDateAndTime)
+        VAR string headerString:="Date"+";"+"Time";
+        VAR string dataString;
+        VAR string readText := " ";
+        VAR bool fileIsAvailable := TRUE;
+		
+		IF(withDateAndTime) THEN
+			dataString:=CDate()+";"+CTime();
+		ELSE
+			dataString:=" ; ";
+		ENDIF
+
+        IF (size<1) size:=1;
+
+        ! Overwrite file
+        IF overwrite THEN
+            RemoveFile filename;
+        ENDIF
+
+        Open filename,ioFileLog\Read;
+		IF (fileIsAvailable) THEN
+			readText:=ReadStr(ioFileLog);
+			! read from file to check if it is empty (write header) or not (dont write header)
+			Close ioFileLog;
+		ENDIF
+
+        Open filename,ioFileLog\Append;
+        ! Set header
+        IF (readText=EOF) THEN
+            FOR i FROM 1 TO size DO
+                IF setHeader THEN
+                    headerString:=headerString+";"+header{i};
+                    IF (i=size) Write ioFileLog,headerString;
+                ENDIF
+            ENDFOR
+        ENDIF
+        ! Set data
+        FOR i FROM 1 TO size DO
+            dataString:=dataString+";"+data{i};
+        ENDFOR
+        IF (NOT setHeader) THEN
+            Write ioFileLog,dataString;
+            Close ioFileLog;
+        ELSE
+            Close ioFileLog;
+        ENDIF
+    ERROR
+        IF ERRNO=ERR_FILEOPEN THEN
+            fileIsAvailable:=FALSE;
+            TRYNEXT;
+        ENDIF
+        IF ERRNO=ERR_FILEACC THEN
+            TRYNEXT;
+        ENDIF
+    ENDPROC
+
+    FUNC string ReadFromFile(string filename,num row,num column)
+        VAR string readText{MAX_ARTICLE_COUNTER}:=[" "," "," "," "," "];
+        VAR string element := " ";
+        VAR num startLimiter:=0;
+        VAR num endLimiter:=1;
+        VAR num counter:=1;
+        VAR bool fileIsAvailable:=TRUE;
+
+        ! Read the hole file without header
+        Open filename,ioFileLog\Read;
+        IF (fileIsAvailable) THEN
+            readText{1}:=ReadStr(ioFileLog);
+            FOR i FROM 1 TO MAX_ARTICLE_COUNTER DO
+                readText{i}:=ReadStr(ioFileLog);
+            ENDFOR
+            Close ioFileLog;
+
+            ! Extract the specific string at position (row, column)
+            WHILE (counter<=column-1) DO
+                startLimiter:=StrFind(readText{row},startLimiter+1,";");
+                counter:=counter+1;
+            ENDWHILE
+            endLimiter:=StrFind(readText{row},startLimiter+1,";");
+
+            element:=StrPart(readText{row},startLimiter+1,(endLimiter-startLimiter)-1);
+        ENDIF
+        RETURN element;
+    ERROR
+        IF ERRNO=ERR_FILEOPEN THEN
+            fileIsAvailable:=FALSE;
+            TRYNEXT;
+        ENDIF
+    ENDFUNC
+
+    PROC initMachineData()
+        serial:=GetSysInfo(\SerialNo);
+        version:=GetSysInfo(\SWVersion);
+        rtype:=GetSysInfo(\RobotType);
+        cid:=GetSysInfo(\CtrlId);
+        lanip:=GetSysInfo(\LanIp);
+        clang:=GetSysInfo(\CtrlLang);
+        dutyTime:=GetServiceInfo(ROB_1\DutyTimeCnt);
+        machineName:="Multiflex";
+        projectNumber:="20168";
+        dateOfCreation:="2015";
+        preAccept:="19.02.15";
+        finAccept:="KW 48-2015";
+        mData:=[machineName,projectNumber,dateOfCreation,preAccept,finAccept,serial,version,rtype,cid,lanip,clang,dutyTime];
+    ENDPROC
+
+    PROC initEventMessages()
+        CONNECT err_int WITH events;
+        IError COMMON_ERR,TYPE_ALL,err_int;
+    ENDPROC
+
+    PROC initCycleTimer()
+        CONNECT nextCT WITH nextCTtrap;
+        ISignalDO nextCTpulser,1,nextCT;
+        CONNECT resetCT WITH resetCTtrap;
+        ISignalDO resetCTpulser,1,resetCT;
+    ENDPROC
+
+    PROC initArticleCounter()
+        CONNECT setArtCntr WITH artCntr;
+        ISignalDO setArticleCounter,1,setArtCntr;
+    ENDPROC
+
+    PROC sendArticleAndInfo()
+        IF (clientConnected AND isSending) THEN
+            ! Send info (machine data)
+            FOR i FROM 1 TO MAX_DATA_SIZE DO
+                tpWriteSocket mData{i},":"+ValToStr(i-1)+":";
+            ENDFOR
+            ! Send article information (counter + last used articles)
+            FOR i FROM 1 TO MAX_ARTICLE_COUNTER DO
+                tpWriteSocket lastArticleNames{i}+"::"+lastArticleCounters{i}+"::"+ValToStr(i-1),":a:";
+            ENDFOR
+            isSending:=FALSE;
+        ENDIF
+    ENDPROC
 
     PROC tpWriteSocket(string msg,string msgType)
         IF clientConnected THEN
-                sendbuffer{cntrMachine}:=msgType+msg+";";
-                bufferState{cntrMachine}:=TRUE;
-                cntrMachine:=cntrMachine+1;
-                IF (cntrMachine>=25) THEN
-                    cntrMachine:=1;
-                ENDIF
+            sendbuffer{cntr}:=msgType+msg+";";
+            bufferState{cntr}:=TRUE;
+            cntr:=cntr+1;
+            IF (cntr>=25) THEN
+                cntr:=1;
+            ENDIF
         ENDIF
     ENDPROC
 ENDMODULE

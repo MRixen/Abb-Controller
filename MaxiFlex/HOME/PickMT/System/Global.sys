@@ -26,4 +26,12 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 	
     PERS BOOL clientConnected:=FALSE;
     PERS BOOL isSending:=TRUE;
+	CONST num MAX_ARTICLE_COUNTER := 5;
+	PERS string actualProgName := "";
+	
+	PERS string lastArticleNames{MAX_ARTICLE_COUNTER}:=[" "," "," "," "," "];
+	PERS string lastArticleNamesTemp{MAX_ARTICLE_COUNTER}:=[" "," "," "," "," "];
+	PERS string lastArticleCounters{MAX_ARTICLE_COUNTER}:=[" "," "," "," "," "];
+	PERS string lastArticleCountersTemp{MAX_ARTICLE_COUNTER}:=[" "," "," "," "," "];
+
 ENDMODULE

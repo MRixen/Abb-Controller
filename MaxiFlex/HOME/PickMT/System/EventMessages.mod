@@ -39,14 +39,6 @@ MODULE EventMessages
 		tpWriteSocket ValToStr(robotState)+"::"+ValToStr(err_domain)+"::"+ValToStr(err_number)+"::"+ValToStr(err_type)+"::"+str1+"::"+"X"+"::"+"X"+"::"+"X"+"::"+"X",":e:"; ! Send only the first string (str1) because there is too much load in string when using str1...5 
     ENDTRAP
 	
-	    PROC tpWriteSocket(string msg,string msgType)
-		IF clientConnected THEN
-		sendbufferEvent{cntr}:=msgType+msg+";";
-		bufferStateEvent{cntr}:=TRUE;	
-		cntr:=cntr+1;
-		IF (cntr>=25) THEN
-			cntr:=1;
-        ENDIF
-		ENDIF
-    ENDPROC
+	
+
 ENDMODULE
