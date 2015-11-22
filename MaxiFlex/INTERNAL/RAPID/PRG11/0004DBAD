@@ -33,7 +33,7 @@ MODULE Diagnose
     ! CycleTimer
     CONST num TOTAL_NUM_OF_CYCLES:=50;
     PERS bool bFirstCycle:=FALSE;
-    PERS num nCycleTime:=2.013;
+    PERS num nCycleTime:=2.044;
     PERS num cycleTimeMean{TOTAL_NUM_OF_CYCLES};
     VAR clock cCycleTime;
     VAR num nCycles;
@@ -57,7 +57,7 @@ MODULE Diagnose
     VAR string header{MAX_ARTICLE_DESCRIPTION_DATA}:=["Article","Counter","CycleTime"];
     ! Max. column amount= 3 (Article,Counter,CycleTime) + 2
 
-    PERS num cntr:=11;
+    PERS num cntr:=17;
 
 	!TODO EInheiten Zugriffsfehler
 	
@@ -185,15 +185,16 @@ MODULE Diagnose
             ! Set header
             WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA,TRUE,TRUE, TRUE;
             
+			!TODO Save actual date+time in array like lastArticleCounters{i}
             FOR j FROM 1 TO MAX_ARTICLE_COUNTER DO
                 data{1}:=lastArticleNames{j};
                 data{2}:=lastArticleCounters{j};
                 IF (j<=articleCounter) THEN
 					data{3}:=ValToStr(nCycleTime);
-					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, FALSE, FALSE, TRUE;
+					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, TRUE, FALSE, TRUE;
 				ELSE 
 					data{3}:=" ";
-					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, FALSE, FALSE, FALSE;
+					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, TRUE, FALSE, FALSE;
 				ENDIF               
             ENDFOR				
             ClkReset cCycleTime;

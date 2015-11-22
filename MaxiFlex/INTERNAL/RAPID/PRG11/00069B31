@@ -33,7 +33,7 @@ MODULE Diagnose
     ! CycleTimer
     CONST num TOTAL_NUM_OF_CYCLES:=50;
     PERS bool bFirstCycle:=FALSE;
-    PERS num nCycleTime:=2.044;
+    PERS num nCycleTime:=2.011;
     PERS num cycleTimeMean{TOTAL_NUM_OF_CYCLES};
     VAR clock cCycleTime;
     VAR num nCycles;
@@ -167,10 +167,10 @@ MODULE Diagnose
 
             ! Convert cycle times to string (max. 80 characters per string)
             ! TODO: Make it possible to send much more cycle time data (for 1 hour)
-            !FOR i FROM 1 TO 16 DO
-            !    cycleTimeMeanString:=cycleTimeMeanString+NumToStr(cycleTimeMean{i},1)+"_"; ! Too much load (more than 80 chars)
-            !    cycleTimeActualString:=cycleTimeActualString+NumToStr(cycleTimeActual{i},1)+"_"; ! Too much load (more than 80 chars)
-            !ENDFOR
+            FOR i FROM 1 TO 16 DO
+                cycleTimeMeanString:=cycleTimeMeanString+NumToStr(cycleTimeMean{i},1)+"_";
+                cycleTimeActualString:=cycleTimeActualString+NumToStr(cycleTimeActual{i},1)+"_";
+            ENDFOR
 
             ! Send logs and cycle time to remote console (smartphone)
             tpWriteSocket "Gesamtzahl der gefertigten Teile:: "+ValToStr(nCyclesShow),":l:";
@@ -191,10 +191,10 @@ MODULE Diagnose
                 data{2}:=lastArticleCounters{j};
                 IF (j<=articleCounter) THEN
 					data{3}:=ValToStr(nCycleTime);
-					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, FALSE, FALSE, TRUE;
+					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, TRUE, FALSE, TRUE;
 				ELSE 
 					data{3}:=" ";
-					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, FALSE, FALSE, FALSE;
+					WriteToFile filename,data,header,MAX_ARTICLE_DESCRIPTION_DATA, TRUE, FALSE, FALSE;
 				ENDIF               
             ENDFOR				
             ClkReset cCycleTime;

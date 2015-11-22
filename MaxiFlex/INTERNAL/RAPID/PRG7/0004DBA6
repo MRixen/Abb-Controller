@@ -19,6 +19,7 @@ MODULE ServerComm
     VAR num nRetries_Timeout;
     CONST num MAX_EQUAL_DATA_AMOUNT := 25;
 	CONST num sendDelayTime := 0.08;
+	VAR bool noClientErrorOccur := TRUE;
 
 	VAR string receive_string;
 
@@ -53,6 +54,7 @@ MODULE ServerComm
                 IF i<=MAX_CLIENTS THEN					
                     SocketAccept server_socket,client_socket{i}\Time:=WAIT_MAX;    
                     clientConnected := TRUE;	
+					noClientErrorOccur := TRUE;
 					WaitTime 1;
 					IF(DOutput(showSocketCmts) = 1) TPwrite "Accept client no. " + ValToStr(i);
                     i:=i+1;
@@ -60,18 +62,20 @@ MODULE ServerComm
                     listening:=FALSE;
                 ENDIF
             ENDWHILE
-				FOR i FROM 1 TO 25 DO
-					IF (bufferState{i}) THEN
-						SocketSend client_socket{1}\Str:=sendbuffer{i};
-						sendbuffer{i} := "";
-						bufferState{i} := false;
-						WaitTime sendDelayTime;
-					ENDIF
-					IF (NOT bufferState{i}) THEN
-						! Send something to signal alive state
-						SocketSend client_socket{1}\Str:=":p:;";
-					ENDIF					
-				ENDFOR
+				IF(noClientErrorOccur) THEN
+					FOR i FROM 1 TO 25 DO
+						IF (bufferState{i}) THEN
+							SocketSend client_socket{1}\Str:=sendbuffer{i};
+							sendbuffer{i} := "";
+							bufferState{i} := false;
+							WaitTime sendDelayTime;
+						ENDIF
+						IF (NOT bufferState{i}) THEN
+							! Send something to signal alive state
+							SocketSend client_socket{1}\Str:=":p:;";
+						ENDIF					
+					ENDFOR
+				ENDIF
         DEFAULT:
 
         ENDTEST
@@ -104,6 +108,7 @@ MODULE ServerComm
     ENDPROC
 
     PROC initSocket()
+		noClientErrorOccur:=FALSE;
         SocketClose server_socket;
         SocketClose client_socket{1};
         i:=1;
