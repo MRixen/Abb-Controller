@@ -39,6 +39,7 @@ MODULE Testmodule2
     ! Copy position because there are the same
     VAR robtarget pUnload:=[[0,0,0],[0,0,0,0],[0,-1,0,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
+
     ! Only for simulation
     !PERS BOOL openClamp;
     !
@@ -56,7 +57,8 @@ MODULE Testmodule2
         VelSet 100,10000;
         nProgrammnummer:=222222;
 		actualProgName := ValToStr(nProgrammnummer);
-		PulseDO\PLength:=0.5,setArticleCounter;
+		PulseDO\PLength:=0.5,setADpulser;        
+        robSpeed:=ValToStr(MaxRobSpeed());
     ENDPROC
 
 
@@ -90,7 +92,15 @@ MODULE Testmodule2
             sState:="Position_n";
             !ENDIF
         CASE "Position_n":
-            PulseDO\PLength:=0.1,nextCTpulser;
+            PulseDO\PLength:=0.5,getCTpulser;
+            ! Need to call after getCTpulser so we get the actual cycletime and counter
+            PulseDO\PLength:=0.5,getADpulser;
+            
+            ! -------------CAUTION---------------
+            ! Delete the following row when the handshake is implemented
+            PulseDO\PLength:=0.5,getMDpulser;
+             ! -------------CAUTION---------------
+             
             Position_1;
             sState:="Idle";
         CASE "NIOCycle":
