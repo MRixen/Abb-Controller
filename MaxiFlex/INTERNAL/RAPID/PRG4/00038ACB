@@ -23,20 +23,13 @@ MODULE Global(SYSMODULE,NOSTEPIN)
     PERS bool bufferState{25}:=[FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 								FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 								FALSE,FALSE,FALSE,FALSE,FALSE];
+								
+	! Change global varibles to local
 	
     PERS BOOL clientConnected:=FALSE;
     PERS BOOL isSending:=TRUE;
-	CONST num MAX_ARTICLE_COUNTER := 5;
 	PERS string actualProgName := "";
-	PERS BOOL syncNonStaticMachineData := TRUE;
-	PERS num ctMean;
-	PERS num ctCounter;
-	 PERS string robSpeed;
+	 PERS string robSpeed := "";
 	 PERS bool allDataIsSend:=FALSE;
-	
-	PERS string lastArticleNames{MAX_ARTICLE_COUNTER}:=[" "," "," "," "," "];
-	PERS string lastArticleNamesTemp{MAX_ARTICLE_COUNTER}:=[" "," "," "," "," "];
-	PERS string lastArticleCounters{MAX_ARTICLE_COUNTER}:=[" "," "," "," "," "];
-	PERS string lastArticleCountersTemp{MAX_ARTICLE_COUNTER}:=[" "," "," "," "," "];
 
 ENDMODULE

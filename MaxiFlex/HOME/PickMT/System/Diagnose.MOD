@@ -20,17 +20,11 @@ MODULE Diagnose
         ENDWHILE
     ENDPROC
 
-    PROC WriteToFile(string filename,string data{*},string header{*},num size,bool setHeader,bool overwrite,bool withDateAndTime,bool noNewLine)
-        VAR string headerString:="Date"+";"+"Time";
+    PROC WriteToFile(string filename,string data{*},string header{*},num size,bool setHeader,bool overwrite,bool noNewLine)
+        VAR string headerString;
         VAR string dataString;
         VAR string readText:="EOF";
         VAR bool fileIsAvailable:=TRUE;
-
-        IF (withDateAndTime) THEN
-            dataString:=CDate()+";"+CTime();
-        ELSE
-            dataString:=" ; ";
-        ENDIF
 
         IF (size<1) size:=1;
 
@@ -52,14 +46,14 @@ MODULE Diagnose
         IF (readText=EOF) THEN
             IF setHeader THEN
                 FOR i FROM 1 TO size DO
-                    headerString:=headerString+";"+header{i};
+                    headerString:=headerString+header{i}+";";
                     IF (i=size) Write ioFileLog,headerString;
                 ENDFOR
             ENDIF
         ENDIF
         ! Set data
         FOR i FROM 1 TO size DO
-            dataString:=dataString+";"+data{i};
+            dataString:=dataString+data{i}+";";
         ENDFOR
         IF (NOT setHeader) THEN
             IF (NOT noNewLine) THEN

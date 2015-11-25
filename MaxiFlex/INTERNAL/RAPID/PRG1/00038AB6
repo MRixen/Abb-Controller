@@ -1,4 +1,4 @@
-MODULE Testmodule6
+MODULE Testmodule1
     !=============================================================================
     ! Module: C398106
     ! Date: 02.02.2015
@@ -55,7 +55,7 @@ MODULE Testmodule6
         AccSet 100,100;
         vmax:=v7000;
         VelSet 100,10000;
-        nProgrammnummer:=666666;
+        nProgrammnummer:=111111;
 		actualProgName := ValToStr(nProgrammnummer);
 		PulseDO\PLength:=0.5,setADpulser;        
         robSpeed:=ValToStr(MaxRobSpeed());

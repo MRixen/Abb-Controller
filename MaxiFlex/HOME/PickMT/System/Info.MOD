@@ -16,6 +16,7 @@ MODULE Info
     VAR string finAccept;
     VAR string actOverride;
     VAR intnum getMD;
+	VAR BOOL syncNonStaticMachineData := TRUE;
 
 
     PROC initMachineData()
@@ -26,11 +27,11 @@ MODULE Info
         lanip:=GetSysInfo(\LanIp);
         clang:=GetSysInfo(\CtrlLang);
         dutyTime:=GetServiceInfo(ROB_1\DutyTimeCnt);
-        machineName:="Multiflex";
-        projectNumber:="20168";
+        machineName:="MaxiFlex Kreuzgelenke";
+        projectNumber:="20193";
         dateOfCreation:="2015";
-        preAccept:="19.02.15";
-        finAccept:="KW 48-2015";
+        preAccept:="KW 42";
+        finAccept:="?";
         actOverride:=ValToStr(CSpeedOverride());
 
         CONNECT getMD WITH getMachineData;
