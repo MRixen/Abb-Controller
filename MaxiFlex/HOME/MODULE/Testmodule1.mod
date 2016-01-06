@@ -92,14 +92,12 @@ MODULE Testmodule1
             sState:="Position_n";
             !ENDIF
         CASE "Position_n":
+			loggingMsg := "Releas to machine";
+			PulseDO\PLength:=0.5,getLogPulser;
+			
             PulseDO\PLength:=0.5,getCTpulser;
             ! Need to call after getCTpulser so we get the actual cycletime and counter
             PulseDO\PLength:=0.5,getADpulser;
-            
-            ! -------------CAUTION---------------
-            ! Delete the following row when the handshake is implemented
-            PulseDO\PLength:=0.5,getMDpulser;
-             ! -------------CAUTION---------------
              
             Position_1;
             sState:="Idle";

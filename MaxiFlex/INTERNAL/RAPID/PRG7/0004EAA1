@@ -31,5 +31,6 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 	PERS string actualProgName := "";
 	 PERS string robSpeed := "";
 	 PERS bool allDataIsSend:=FALSE;
+	 PERS string loggingMsg:="";
 
 ENDMODULE

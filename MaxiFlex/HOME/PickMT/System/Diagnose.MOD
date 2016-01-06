@@ -1,5 +1,6 @@
 MODULE Diagnose
     PERS num cntr:=18;
+	VAR intnum getLog;
 
     !TODO Wertefehler, da am Ende ein Whitespace steht (5. Zeile)
 
@@ -8,6 +9,7 @@ MODULE Diagnose
         initEventMessages;
         initCycleTimer;
         initArticleCounter;
+		initLogging;
         WHILE TRUE DO
             IF (clientConnected AND isSending) THEN
                 PulseDO\PLength:=0.5,getADpulser;
@@ -19,6 +21,16 @@ MODULE Diagnose
             WaitTime 0.01;
         ENDWHILE
     ENDPROC
+	
+	PROC initLogging()
+        CONNECT getLog WITH getLoggingData;
+        ISignalDO getLogPulser,1,getLog;
+    ENDPROC
+
+
+    TRAP getLoggingData
+        tpWriteSocket loggingMsg, "l";
+    ENDTRAP
 
     PROC WriteToFile(string filename,string data{*},string header{*},num size,bool setHeader,bool overwrite,bool noNewLine)
         VAR string headerString;

@@ -9,8 +9,9 @@ MODULE ServerComm
     VAR socketdev socket;
     VAR num state:=1;
     CONST string IP:="192.168.1.2";
-    CONST string IPremote := "127.0.0.1";! := "192.168.1.1";
-    VAR num port:=1025;
+    CONST string IPremote := "192.168.1.4";
+    !VAR num port:=1025;
+	VAR num port:=4555;
     CONST num MAX_PORT_NUMBER:=4999;
     VAR bool listening:=true;
     VAR num i:=1;
@@ -27,7 +28,7 @@ MODULE ServerComm
 
     CONST num SERVER:=1;
     CONST num CLIENT:=2;
-    CONST NUM communicationModell:=SERVER;
+    CONST NUM communicationModell:=CLIENT;
     CONST NUM MAX_RESEND_COUNTER:=5;
     VAR NUM resendCounter:=1;
 
