@@ -27,6 +27,7 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 	! Change global varibles to local
 	
     PERS BOOL clientConnected:=FALSE;
+    PERS BOOL clientNameAlreadySend:=FALSE;
     PERS BOOL isSending:=TRUE;
 	PERS string actualProgName := "";
 	 PERS string robSpeed := "";

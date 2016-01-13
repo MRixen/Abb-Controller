@@ -11,7 +11,7 @@ MODULE Diagnose
         initArticleCounter;
 		initLogging;
         WHILE TRUE DO
-            IF (clientConnected AND isSending) THEN
+            IF (clientConnected AND clientNameAlreadySend AND isSending) THEN
                 PulseDO\PLength:=0.5,getADpulser;
                 ! Send article data
                 PulseDO\PLength:=0.5,getMDpulser;

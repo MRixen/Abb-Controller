@@ -56,27 +56,46 @@ MODULE ServerComm
 		! SEND / RECEIVE DATA
 		! -------------------------------------------------------		
 		IF (clientConnected) THEN
-			FOR i FROM 1 TO 25 DO
-					IF (bufferState{i}) THEN
-						RESEND:
-						SocketSend client_socket{1}\Str:=sendbuffer{i};
-						!SocketReceive client_socket{1}\Str:=recMsg\Time:=3;
-						!IF ((recMsg="0") AND (resendCounter<=MAX_RESEND_COUNTER)) THEN
-							! Send again
-						!	resendCounter := resendCounter+1;
-						!	GOTO RESEND;
-						!ENDIF
-						sendbuffer{i}:="";
-						bufferState{i}:=false;
-						resendCounter:=1;
-						recMsg:="0";
-						WaitTime sendDelayTime;
-					ENDIF
-					IF (NOT bufferState{i}) THEN
-						! Send something to signal alive state
-						SocketSend client_socket{1}\Str:=":p:;";
-					ENDIF
-			ENDFOR
+			IF (NOT clientNameAlreadySend) THEN
+				RESEND_CLIENT_NAME:
+				SocketSend client_socket{1}\Str:="RobotController;";
+				SocketReceive client_socket{1}\Str:=recMsg\Time:=3;
+				IF ((recMsg="0") AND (resendCounter<=MAX_RESEND_COUNTER)) THEN
+					 !Send again
+					 resendCounter := resendCounter+1;
+					 GOTO RESEND_CLIENT_NAME;
+				ENDIF 
+				IF ((resendCounter>MAX_RESEND_COUNTER)) THEN
+						initSocket;
+				ELSE 
+					clientNameAlreadySend := TRUE;
+					TPwrite "Msg received from server: " + recMsg;
+				ENDIF				
+			ENDIF
+			IF (clientConnected) THEN
+				FOR i FROM 1 TO 25 DO
+						IF (bufferState{i}) THEN
+							RESEND:
+							SocketSend client_socket{1}\Str:=sendbuffer{i};
+							!SocketReceive client_socket{1}\Str:=recMsg\Time:=3;
+							!IF ((recMsg="0") AND (resendCounter<=MAX_RESEND_COUNTER)) THEN
+								! Send again
+							!	resendCounter := resendCounter+1;
+							!	GOTO RESEND;
+							!ENDIF
+							sendbuffer{i}:="";
+							bufferState{i}:=false;
+							resendCounter:=1;
+							recMsg:="0";
+							WaitTime sendDelayTime;
+						ENDIF
+						IF (NOT bufferState{i}) THEN
+							! Send something to signal alive state
+							SocketSend client_socket{1}\Str:=":p:;";
+                            WaitTime sendDelayTime;
+						ENDIF
+				ENDFOR
+			ENDIF
 			ENDIF
 		! -------------------------------------------------------
 
@@ -114,9 +133,10 @@ MODULE ServerComm
 		
     PROC initSocket()
         allDataIsSend:=FALSE;
-        SocketClose socket;
-        SocketClose client_socket{1};
+		SocketClose socket;
+		SocketClose client_socket{1};
 		failure := true;
+		clientNameAlreadySend:=FALSE;
         i:=1;
         state:=1;
         listening:=TRUE;
