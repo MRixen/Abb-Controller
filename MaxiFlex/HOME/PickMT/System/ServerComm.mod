@@ -27,7 +27,6 @@ MODULE ServerComm
     VAR bool connectionIsEstablished:=FALSE;
     CONST NUM MAX_RESEND_COUNTER:=5;
     VAR NUM resendCounter:=1;
-	VAR bool failure := false;
 
     PROC main()
         WHILE TRUE DO
@@ -43,12 +42,11 @@ MODULE ServerComm
                 ! CREATE CLIENT SOCKET
 				SocketCreate client_socket{1};
                 SocketConnect client_socket{1},IP,PORT\Time:=2;
-				IF (NOT failure) THEN
+				IF(SocketGetStatus( client_socket{1} ) = SOCKET_CONNECTED) THEN
 					clientConnected:=TRUE;
 					WaitTime 1;
 					connectionIsEstablished:=TRUE;
-				ENDIF
-				failure := false;
+				ENDIF				
         ENDIF
 		! -------------------------------------------------------
 
@@ -135,7 +133,6 @@ MODULE ServerComm
         allDataIsSend:=FALSE;
 		SocketClose socket;
 		SocketClose client_socket{1};
-		failure := true;
 		clientNameAlreadySend:=FALSE;
         i:=1;
         state:=1;

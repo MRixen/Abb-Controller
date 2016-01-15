@@ -1,5 +1,5 @@
 MODULE Diagnose
-    PERS num cntr:=6;
+    PERS num cntr:=18;
 	VAR intnum getLog;
 
     !TODO Wertefehler, da am Ende ein Whitespace steht (5. Zeile)
