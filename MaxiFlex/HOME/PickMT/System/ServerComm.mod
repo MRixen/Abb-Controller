@@ -71,16 +71,18 @@ MODULE ServerComm
 				ENDIF				
 			ENDIF
 			IF (clientConnected) THEN
+				recMsg := "0";
 				FOR i FROM 1 TO 25 DO
 						IF (bufferState{i}) THEN
 							RESEND:
+							! TODO: Send message length and validate with the return value from from server
 							SocketSend client_socket{1}\Str:=sendbuffer{i};
-							!SocketReceive client_socket{1}\Str:=recMsg\Time:=3;
-							!IF ((recMsg="0") AND (resendCounter<=MAX_RESEND_COUNTER)) THEN
+							SocketReceive client_socket{1}\Str:=recMsg\Time:=3;
+							IF ((recMsg="0") AND (resendCounter<=MAX_RESEND_COUNTER)) THEN
 								! Send again
-							!	resendCounter := resendCounter+1;
-							!	GOTO RESEND;
-							!ENDIF
+								resendCounter := resendCounter+1;
+								GOTO RESEND;
+							ENDIF
 							sendbuffer{i}:="";
 							bufferState{i}:=false;
 							resendCounter:=1;
@@ -118,6 +120,8 @@ MODULE ServerComm
 				ENDIF
 			ENDIF
 			IF ERRNO=ERR_SOCK_TIMEOUT THEN
+				! Prevent to save log in queue
+				SkipWarn;
 				IF (DOutput(showSocketCmts)=1) TPwrite "Socket timeout.";
 				nRetries_Timeout:=RemainingRetries();
 	            IF (nRetries_Timeout>=0) THEN
