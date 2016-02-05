@@ -1,6 +1,8 @@
 MODULE Diagnose
-    PERS num cntr:=18;
+    PERS num cntr:=5;
+    VAR intnum getLOG;
 
+    
     !TODO Wertefehler, da am Ende ein Whitespace steht (5. Zeile)
 
     PROC main()
@@ -8,6 +10,7 @@ MODULE Diagnose
         initEventMessages;
         initCycleTimer;
         initArticleCounter;
+		initLogging;
         WHILE TRUE DO
             IF (clientConnected AND isSending) THEN
                 PulseDO\PLength:=0.5,getADpulser;
@@ -20,6 +23,15 @@ MODULE Diagnose
         ENDWHILE
     ENDPROC
 
+    PROC initLogging()
+        CONNECT getLOG WITH getLogMessage;
+        ISignalDO getLOGpulser,1,getLOG;
+    ENDPROC
+
+    TRAP getLogMessage
+        tpWriteSocket logMessage,":l:";
+    ENDTRAP
+
     PROC WriteToFile(string filename,string data{*},string header{*},num size,bool setHeader,bool overwrite,bool noNewLine)
         VAR string headerString;
         VAR string dataString;
@@ -31,16 +43,16 @@ MODULE Diagnose
         ! Overwrite file or read from it to check if its empty
         IF overwrite THEN
             RemoveFile filename;
-			ELSE
-        Open filename,ioFileLog\Read;
-        IF (fileIsAvailable) THEN
-            readText:=ReadStr(ioFileLog);
-            ! read from file to check if it is empty (write header) or not (dont write header)
-            Close ioFileLog;
-        ENDIF			
+        ELSE
+            Open filename,ioFileLog\Read;
+            IF (fileIsAvailable) THEN
+                readText:=ReadStr(ioFileLog);
+                ! read from file to check if it is empty (write header) or not (dont write header)
+                Close ioFileLog;
+            ENDIF
         ENDIF
 
-		! Open file and write the header (when its empty and if flag is set)
+        ! Open file and write the header (when its empty and if flag is set)
         Open filename,ioFileLog\Append;
         ! Set header
         IF (readText=EOF) THEN

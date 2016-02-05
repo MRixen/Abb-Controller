@@ -17,6 +17,14 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 
     PERS bazstate Baz:=[FALSE,FALSE,1,1,1,"RunCycle"];
 	
+	PERS string robotProductName{22}:=["120","1200","140","1600","1600ID","2400","260","2600","2600ID","4400",
+										"460","4600","660","","6620","6640","6650","6660","6700","760",
+										"7600","8700"];
+								 
+	PERS string robotPayloadData{22}:=["3","5-7","6","6-10","4","7-20","30","12-20","8-15","60",
+										"110","20-60","180-250","150","","130-235, 150","125-200","100-130, 205","150-300","450",
+										"150-500","550-800"];
+	
 	PERS string sendbuffer{25}:=["","","","","","","","","","",
 								 "","","","","","","","","","",
 								 "","","","",""];
@@ -31,5 +39,5 @@ MODULE Global(SYSMODULE,NOSTEPIN)
 	PERS string actualProgName := "";
 	 PERS string robSpeed := "";
 	 PERS bool allDataIsSend:=FALSE;
-
+	 PERS string logMessage := "";
 ENDMODULE

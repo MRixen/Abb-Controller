@@ -1,6 +1,6 @@
 MODULE Info
     ! MachineData
-    CONST num MAX_DATA_SIZE:=14;
+    CONST num MAX_DATA_SIZE:=15;
     VAR string mData{MAX_DATA_SIZE};
     VAR string serial;
     VAR string version;
@@ -15,11 +15,17 @@ MODULE Info
     VAR string preAccept;
     VAR string finAccept;
     VAR string actOverride;
+    VAR string payLoad;
     VAR intnum getMD;
 	VAR BOOL syncNonStaticMachineData := TRUE;
 
 
     PROC initMachineData()
+		VAR num endLimiter;
+		VAR string element;
+		VAR bool breakLoop;
+		VAR num i;
+	
         serial:=GetSysInfo(\SerialNo);
         version:=GetSysInfo(\SWVersion);
         rtype:=GetSysInfo(\RobotType);
@@ -33,6 +39,20 @@ MODULE Info
         preAccept:="KW 42";
         finAccept:="?";
         actOverride:=ValToStr(CSpeedOverride());
+		
+		! Get payload of robot
+		endLimiter:=StrFind(serial,1,"-");
+		element:=StrPart(serial,1,endLimiter-1);
+		breakLoop := TRUE;
+		i := 1;
+		WHILE(breakLoop) DO				
+			IF(element = robotProductName{i}) THEN
+				payLoad := robotPayloadData{i};
+				breakLoop := FALSE;
+			ENDIF
+			i := i + 1;
+        ENDWHILE
+
 
         CONNECT getMD WITH getMachineData;
         ISignalDO getMDpulser,1,getMD;
@@ -77,6 +97,6 @@ MODULE Info
     PROC setNonStaticData()
         dutyTime:=GetServiceInfo(ROB_1\DutyTimeCnt);
         actOverride:=ValToStr(CSpeedOverride());
-        mData:=[machineName,projectNumber,dateOfCreation,preAccept,finAccept,serial,version,rtype,cid,lanip,clang,robSpeed,actOverride,dutyTime];
+        mData:=[machineName,projectNumber,dateOfCreation,preAccept,finAccept,serial,version,rtype,cid,lanip,clang,robSpeed,actOverride,dutyTime,payLoad];
     ENDPROC
 ENDMODULE

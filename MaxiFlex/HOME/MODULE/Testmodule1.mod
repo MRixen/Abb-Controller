@@ -76,6 +76,8 @@ MODULE Testmodule1
         !GetBAZState;
         TEST sState
         CASE "Idle","RunCycle":
+			logMessage:="Idle / RunCycle";
+            PulseDO\PLength:=0.5,getLOGpulser;		
             sState:=Baz.Cycle;
             !Ist Baz.Cycle anders als RunCycle immer auf Teilen der Maschine warten
             ! Aufruf von GetBazState() in ComInBaz()
@@ -88,10 +90,14 @@ MODULE Testmodule1
             IF Baz.Cycle="RunCycle" sState:="PickCamera";
         CASE "PickCamera":
             !IF bCoordReceived{CAMERA_NO_1}=TRUE OR bCoordReceived{CAMERA_NO_2}=TRUE THEN
+			logMessage:="PickCamera";
+            PulseDO\PLength:=0.5,getLOGpulser;
             PickCamera;
             sState:="Position_n";
             !ENDIF
         CASE "Position_n":
+			logMessage:="Position_n";
+            PulseDO\PLength:=0.5,getLOGpulser;			
             PulseDO\PLength:=0.5,getCTpulser;
             ! Need to call after getCTpulser so we get the actual cycletime and counter
             PulseDO\PLength:=0.5,getADpulser;

@@ -10,7 +10,7 @@ MODULE ServerComm
     VAR num state:=1;
     CONST string IP:="192.168.1.2";
     CONST string IPremote := "127.0.0.1";! := "192.168.1.1";
-    VAR num port:=1025;
+    VAR num port:=4500;
     CONST num MAX_PORT_NUMBER:=4999;
     VAR bool listening:=true;
     VAR num i:=1;
@@ -89,6 +89,7 @@ MODULE ServerComm
 
     ERROR
         IF ERRNO=ERR_SOCK_CLOSED THEN
+			SkipWarn;
             IF (DOutput(showSocketCmts)=1) TPwrite "Socket closed.";
             nRetries_Closed:=RemainingRetries();
             IF (nRetries_Closed>=0) THEN
@@ -98,6 +99,7 @@ MODULE ServerComm
             ENDIF
         ENDIF
         IF ERRNO=ERR_SOCK_ADDR_INUSE THEN
+			SkipWarn;
             IF (DOutput(showSocketCmts)=1) TPwrite "Soccket addres in use.";
             nRetries_AddrUsed:=RemainingRetries();
             IF (nRetries_AddrUsed>=0) THEN
@@ -105,6 +107,7 @@ MODULE ServerComm
             ENDIF
         ENDIF
         IF ERRNO=ERR_SOCK_TIMEOUT THEN
+			SkipWarn;
             IF (DOutput(showSocketCmts)=1) TPwrite "Socket timeout.";
             nRetries_Timeout:=RemainingRetries();
 !            IF (nRetries_Timeout>=0) THEN

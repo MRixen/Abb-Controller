@@ -53,7 +53,6 @@ MODULE CycleTime
             ENDFOR
 
             ! Send logs and cycle time to remote console (smartphone)
-            tpWriteSocket "Gesamtzahl der gefertigten Teile:: "+ValToStr(nCyclesShow),":l:";
             tpWriteSocket ValToStr(nCycleTime),":c1:";
             tpWriteSocket ValToStr(cycleTimeMean{1}),":c2:";
 
