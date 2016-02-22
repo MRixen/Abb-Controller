@@ -1,0 +1,7 @@
+MODULE setProgramPointer(SYSMODULE)
+        PROC setPPmain()
+        ! Set pp of serverCom to main by emergency stop
+        PulseDO \PLength:=0.5, DOF_StartAtMain;
+		TPwrite "inside setPPmain";
+    ENDPROC
+ENDMODULE

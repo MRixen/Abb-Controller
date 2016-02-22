@@ -100,13 +100,7 @@ MODULE Testmodule1
             PulseDO\PLength:=0.5,getLOGpulser;			
             PulseDO\PLength:=0.5,getCTpulser;
             ! Need to call after getCTpulser so we get the actual cycletime and counter
-            PulseDO\PLength:=0.5,getADpulser;
-            
-            ! -------------CAUTION---------------
-            ! Delete the following row when the handshake is implemented
-            PulseDO\PLength:=0.5,getMDpulser;
-             ! -------------CAUTION---------------
-             
+            PulseDO\PLength:=0.5,getADpulser;             
             Position_1;
             sState:="Idle";
         CASE "NIOCycle":
